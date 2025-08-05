@@ -63,6 +63,10 @@ dependencyManagement {
     }
 }
 
+springBoot {
+    mainClass.set("org.iot_platform.apigateway.ApiGatewayApplicationKt")
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
