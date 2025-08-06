@@ -34,6 +34,8 @@ dependencies {
     // Security and OAuth2
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
