@@ -1,0 +1,52 @@
+CONNECTED(00000004)
+---
+Certificate chain
+ 0 s:C=US, ST=State, L=City, O=Organization, CN=37.233.82.76.nip.io
+   i:C=US, ST=State, L=City, O=Organization, CN=37.233.82.76.nip.io
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Aug  2 14:06:15 2025 GMT; NotAfter: Aug  2 14:06:15 2026 GMT
+-----BEGIN CERTIFICATE-----
+MIIDozCCAougAwIBAgIUIVDKECNQxoHBds6sFvid6f/wNVQwDQYJKoZIhvcNAQEL
+BQAwYTELMAkGA1UEBhMCVVMxDjAMBgNVBAgMBVN0YXRlMQ0wCwYDVQQHDARDaXR5
+MRUwEwYDVQQKDAxPcmdhbml6YXRpb24xHDAaBgNVBAMMEzM3LjIzMy44Mi43Ni5u
+aXAuaW8wHhcNMjUwODAyMTQwNjE1WhcNMjYwODAyMTQwNjE1WjBhMQswCQYDVQQG
+EwJVUzEOMAwGA1UECAwFU3RhdGUxDTALBgNVBAcMBENpdHkxFTATBgNVBAoMDE9y
+Z2FuaXphdGlvbjEcMBoGA1UEAwwTMzcuMjMzLjgyLjc2Lm5pcC5pbzCCASIwDQYJ
+KoZIhvcNAQEBBQADggEPADCCAQoCggEBAL2u6MUmVnzG4ddYWQWITu43EN3/NRpa
+n9XKcXhEIxhvvMUSp4uhPRuE3XeG4wqrCBA9+WVdR11+DWP9z9BeSzGF2bdNRdAi
+XLOztYxCu7qyXNxnXfvlzjxSwdI3q8XCR2VMLpnkQ9O/fCatrIU3M3xdMoDWLyls
+lmyorYuQcdkzMSSAnqqJZ/rR3BvSjh/pINdbiydOJHG3H4demc5ggghZmw6AdHrw
+7h4dhh6+K7Wu42RQxES7KnwwQ2FS5s8Q6CM4fKA9bTt8fA0Wle/krAJ6HTrNE6z/
+dHxraXmGcE8RTdAr63sJSKibB42q1asFK6UIPMNQLd3hN+r7b7tUNiECAwEAAaNT
+MFEwHQYDVR0OBBYEFEzOGMdjq/3MDgtzwwL7EPnwxp7JMB8GA1UdIwQYMBaAFEzO
+GMdjq/3MDgtzwwL7EPnwxp7JMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEL
+BQADggEBAIwDpMmHBxpmW3aGAMHBaG62a28fM9E8B5Pp7I1SCPnrRgAvItPpo6sI
+oxRdJPY9POBQO0LYuQN030FxT1u6F/MJxMRBZvX59x3iySnJfVevfWSEDRZe2MyI
+YBpWl2fM5vGOGEdqsiNjvycMu3M/+pkaZtVJ31lhE1PjzdNkv79rEFnBDLfsBF2+
+hpRPIAjTewAO+kyMEeNvj32ixssbyvqffwQi3mWpwinxz7/XXYUuQK2/N53ysJ0/
+xEnPM0oTpEh08F+Le/MVAA37PAz5o2vP2/XQiPd86POfidT+NSFcAfvrA4C6hlXe
+5ziX5Qs2T0oYe0LeQAifl2rrvk1ocpM=
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=C=US, ST=State, L=City, O=Organization, CN=37.233.82.76.nip.io
+issuer=C=US, ST=State, L=City, O=Organization, CN=37.233.82.76.nip.io
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 1517 bytes and written 410 bytes
+Verification error: self-signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Protocol: TLSv1.3
+Server public key is 2048 bit
+This TLS version forbids renegotiation.
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 18 (self-signed certificate)
+---
