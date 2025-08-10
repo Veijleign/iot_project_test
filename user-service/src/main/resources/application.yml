@@ -4,3 +4,18 @@ server:
 spring:
   application:
     name: user-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
