@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     // Spring Boot Starters
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
@@ -39,6 +39,9 @@ dependencies {
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
