@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 import java.util.*
 
-@Table
+@Table("users")
 data class User(
     @Id
     val id: UUID? = null,
