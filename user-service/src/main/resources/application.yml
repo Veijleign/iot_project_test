@@ -5,17 +5,67 @@ spring:
   application:
     name: user-service
 
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/iot_platform
+    username: postgres
+    password: admin # надо выносить в пропсы
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
 
+  # Jackson Configuration
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: NON_NULL
+
+keycloak:
+  server-url: https://37.233.82.76.nip.io
+  main-realm: iot-platform
+  admin-client-id: admin-client
+  admin-client-secret: jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v
+
+webclient:
+  keycloak:
+    base-url: https://37.233.82.76.nip.io
+    connection-timeout: 5000
+    read-timeout: 10000
+
 management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, metrics, prometheus
   endpoint:
     health:
       show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+app:
+  security:
+    cors:
+      allowed-origins:
+        - http://localhost:3000
+        - https://37.233.82.76.nip.io
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+
+user:
+  default-role: viewer
+  registration:
+    enabled: true
+    require-email-verification: false
+
+  organization:
+    max-users: 1000

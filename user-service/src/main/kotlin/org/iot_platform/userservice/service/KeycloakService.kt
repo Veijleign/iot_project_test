@@ -4,24 +4,28 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class KeycloakService(
     private val webClient: WebClient,
     @Value("\${keycloak.server-url}") private val keycloakUrl: String,
-    @Value("\${keycloak.realm") private val realm: String,
+    @Value("\${keycloak.main-realm") private val realm: String,
     @Value("\${keycloak.admin-client-id}") private val adminClientId: String,
     @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String,
 ) {
+
+
     suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getAdminToken()
 
         return webClient.post()
             .uri("$keycloakUrl/admin/realms/$realm/users")
             .header("Authorization", "Bearer $token")
-            .header("Content-Type", "application/json")
+            .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(userRegistrationDto)
             .retrieve()
             .bodyToMono(KeycloakUserResponse::class.java)
@@ -133,14 +137,16 @@ class KeycloakService(
     }
 
     private suspend fun getAdminToken(): String {
+        val tokenEndpoint = "/realms/$realm/protocol/openid-connect/token"
         val tokenResponse = webClient
             .post()
-            .uri("$keycloakUrl/admin")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .bodyValue(
-                "grant_type=client_credentials" +
-                        "&client_id=$adminClientId" +
-                        "&client_secret=$adminClientSecret"
+            .uri(tokenEndpoint)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+//            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(
+                BodyInserters.fromFormData("grant_type", "client_credentials")
+                    .with("client_id", adminClientId)
+                    .with("client_secret", adminClientSecret)
             )
             .retrieve()
             .bodyToMono(TokenResponse::class.java)
@@ -148,6 +154,4 @@ class KeycloakService(
 
         return tokenResponse.accessToken
     }
-
-
 }

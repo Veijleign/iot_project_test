@@ -9,30 +9,26 @@ import org.iot_platform.userservice.service.UserService
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 
 @RestController
 @RequestMapping("/users")
 class UserManagementController(
     private val userService: UserService,
-    private val organizationRepository: OrganizationRepository,
+    private val organizationService: OrganizationRepository,
 ) {
 
     @PostMapping("/register")
     suspend fun registerUser(
         @Valid @RequestBody registrationDto: UserRegistrationDto
-    ) : ResponseEntity<UserResponseDto> {
+    ): ResponseEntity<UserResponseDto> {
         return try {
             val user = userService.registerUser(registrationDto)
             ResponseEntity.status(HttpStatus.CREATED).body(user)
-
         } catch (e: Exception) {
             ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(null)
@@ -61,46 +57,142 @@ class UserManagementController(
     suspend fun updateCurrentUserProfile(
         @AuthenticationPrincipal jwt: Jwt,
         @Valid @RequestBody updateDto: UserProfileUpdateDto
-    ) : ResponseEntity<UserResponseDto> {
+    ): ResponseEntity<UserResponseDto> {
         val keycloakUserId = jwt.subject
-        val user = userService.getUserByKeycloakId(keycloakUserId) ?: return ResponseEntity.notFound().build()
+        val user = userService.getUserByKeycloakId(keycloakUserId)
+            ?: return ResponseEntity.notFound().build()
 
         val updated = userService.updateUserProfile(user.id, updateDto)
 
-        return if(updated != null) {
+        return if (updated != null) {
             ResponseEntity.ok(updated)
         } else {
             ResponseEntity.badRequest().build()
         }
     }
 
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('admin') or hasRole('operator')")
+    suspend fun getUserById(@PathVariable userId: UUID): ResponseEntity<UserResponseDto> {
+        val user = userService.getUserById(userId)
 
+        return if (user != null) {
+            ResponseEntity.ok(user)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
 
+    @PostMapping("/{userId}/roles/{roleName}")
+    @PreAuthorize("hasRole('admin')")
+    suspend fun assignRoleToUser(
+        @PathVariable userId: UUID,
+        @PathVariable roleName: String,
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<Map<String, String>> {
+        val currentUser = userService.getUserByKeycloakId(jwt.subject) ?: return ResponseEntity.notFound().build()
+
+        val success = userService.assignRole(userId, roleName, currentUser.id)
+
+        return if(success) {
+            ResponseEntity.ok(mapOf(
+                "message" to "Role $roleName assigned to user successfully"
+            ))
+        } else {
+            ResponseEntity.badRequest().body(mapOf(
+                "error" to "Failed to assign role or role already exists"
+            ))
+        }
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleName}")
+    @PreAuthorize("hasRole('admin')")
+    suspend fun removeRoleFromUser(
+        @PathVariable userId: UUID,
+        @PathVariable roleName: String,
+    ) : ResponseEntity<Map<String, String>> {
+        val success = userService.removeRole(userId, roleName)
+
+        return if(success) {
+            ResponseEntity.ok(mapOf(
+                "message" to "Role $roleName removed from user successfully"
+            ))
+        } else {
+            ResponseEntity.badRequest().body(mapOf(
+                "error" to "Failed to remove role from user"
+            ))
+        }
+    }
+
+    @PutMapping("/{userId}/deactivate")
+    @PreAuthorize("hasRole('admin')")
+    suspend fun deactivateUser(
+        @PathVariable userId: UUID,
+    ) : ResponseEntity<Map<String, String>> {
+        val success = userService.deactivateUser(userId)
+
+        return if(success) {
+            ResponseEntity.ok(mapOf(
+                "message" to "User deactivated successfully"
+            ))
+        } else {
+            ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(mapOf(
+                "error" to "Failed deactivate user"
+            ))
+        }
+    }
+
+    @GetMapping("organization/{orgId}")
+    @PreAuthorize("hasRole('admin') or hasRole('operator')")
+    suspend fun getUsersByOrganization(
+        @PathVariable orgId: UUID
+    ): ResponseEntity<List<UserResponseDto>> {
+        val users = userService.getUsersByOrganization(orgId)
+        return ResponseEntity.ok(users)
+    }
 
     @GetMapping("/test")
-    fun testEndpoint() : ResponseEntity<Map<String, String>> {
+    suspend fun testEndpoint(): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.ok(
+            mapOf(
+                "message" to "User service is working!",
+                "service" to "user-service",
+                "timestamp" to System.currentTimeMillis().toString()
+            )
+        )
+    }
+
+    @GetMapping("/secure-test")
+    @PreAuthorize("hasRole('admin') or hasRole('operator')")
+    suspend fun secureTest(
+        @AuthenticationPrincipal jwt: Jwt
+    ) : ResponseEntity<Map<String, Any?>> {
         return ResponseEntity.ok(mapOf(
-            "message" to "User service is working!",
-            "service" to "user-service",
-            "timestamp" to System.currentTimeMillis().toString()
+            "message" to "Secure endpoint accessed successfully",
+            "user" to jwt.subject,
+            "roles" to extractRoles(jwt),
+            "scopes" to getScopesFromJwt(jwt)
         ))
     }
 
-    private fun getRolesFromJwt(jwt: Jwt): List<String> {
+    private fun extractRoles(jwt: Jwt): List<String> {
         val roles = mutableListOf<String>()
 
         // Roles from realm_access
         val realmAccess = jwt.getClaimAsMap("realm_access")
         if (realmAccess != null) {
             val realmRoles = realmAccess["roles"]
-            if(realmRoles is List<*>) {
+            if (realmRoles is List<*>) {
                 roles.addAll(realmRoles.filterIsInstance<String>())
             }
         }
         return roles
     }
 
-    private fun getScopesFromJwt(jwt: Jwt) : List<String> {
+
+    private fun getScopesFromJwt(jwt: Jwt): List<String> {
         return jwt.getClaimAsStringList("scope") ?: emptyList()
     }
 

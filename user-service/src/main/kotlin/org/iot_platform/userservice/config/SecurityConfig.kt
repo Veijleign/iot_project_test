@@ -1,9 +1,11 @@
-package org.iot_platform.userservice.controller
+package org.iot_platform.userservice.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter
@@ -11,6 +13,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableMethodSecurity(prePostEnabled = true) // for using @PreAuthorize
 class SecurityConfig {
 
     @Bean
@@ -20,6 +23,7 @@ class SecurityConfig {
                 exhange
                     // Healthchecks
                     .pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers("/users/test").permitAll() // TODO временно
 
                     // Anything else - requiers authentication
                     .anyExchange().authenticated()
@@ -39,35 +43,37 @@ class SecurityConfig {
             val authorities = mutableListOf<SimpleGrantedAuthority>()
 
             // extarct scopes
-            val scopes = jwt.getClaimAsStringList("scope") ?: emptyList()
-            scopes.forEach { scope ->
-                authorities.add(SimpleGrantedAuthority("SCOPE_$scope"))
+            val scopeClaim = jwt.claims["scope"]
+            val scopes = when (scopeClaim) {
+                is String -> scopeClaim.split(" ").filter { it.isNotBlank() }
+                is List<*> -> scopeClaim.filterIsInstance<String>()
+                else -> emptyList()
             }
+            scopes.forEach { authorities.add(SimpleGrantedAuthority("SCOPE_$it")) }
 
             // extract roles
-            val realmAccess = jwt.getClaimAsMap("realm_access")
-            if (realmAccess != null) {
-                val roles = realmAccess["roles"]
-                if (roles is List<*>) {
-                    roles.filterIsInstance<String>().forEach { role ->
-                        authorities.add(SimpleGrantedAuthority("ROLE_$role"))
-                    }
-                }
+            val realmAccess = jwt.claims["realm_access"]
+            if (realmAccess is Map<*, *>) {
+                val roles = (realmAccess["roles"] as? List<*>)
+                    ?.filterIsInstance<String>()
+                    .orEmpty()
+
+                roles.forEach { authorities.add(SimpleGrantedAuthority("ROLE_$it")) }
             }
 
             // extract roles from resource_access
             val resourceAccess = jwt.getClaimAsMap("resource_access")
-            resourceAccess?.forEach { (clientId, clientRoles) ->
-                if (clientRoles is Map<*, *>) {
-                    val roles = clientRoles["roles"]
-                    if (roles is List<*>) {
-                        roles.filterIsInstance<String>().forEach{ role ->
-                            authorities.add(SimpleGrantedAuthority("ROLE_${clientId}_$role"))
-                        }
+            if (resourceAccess is Map<*, *>) {
+                resourceAccess.forEach { (clientId, clientRoles) ->
+                    if (clientRoles is Map<*, *>) {
+                        val roles = (clientRoles["roles"] as? List<*>)
+                            ?.filterIsInstance<String>()
+                            .orEmpty()
+                        roles.forEach { authorities.add(SimpleGrantedAuthority("ROLE_${clientId}_$it")) }
                     }
                 }
             }
-            authorities as List<SimpleGrantedAuthority>
+            authorities as Collection<GrantedAuthority>?
         }
         return ReactiveJwtAuthenticationConverterAdapter(jwtConverter)
     }
