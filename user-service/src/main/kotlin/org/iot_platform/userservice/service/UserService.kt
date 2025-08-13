@@ -143,7 +143,7 @@ class UserService(
         return true
     }
 
-    suspend fun getUsersByOrganization(organizationId: UUID): List<UserResponseDto> {
+    suspend fun getUsersByOrganizationResponse(organizationId: UUID): List<UserResponseDto> {
         val users = userRepository.findByOrganisationId(organizationId)
 
         return users.map { user ->
@@ -151,6 +151,8 @@ class UserService(
             mapToResponseDto(user, roles)
         }
     }
+
+    suspend fun getAllUsersByOrganization(organizationId: UUID): List<User> = userRepository.findByOrganisationId(organizationId)
 
     suspend fun updateLastLogin(keycloakUserId: String) {
         val user = userRepository.findByKeycloakUserId(keycloakUserId)

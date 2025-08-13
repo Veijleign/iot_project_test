@@ -149,7 +149,7 @@ class UserManagementController(
     suspend fun getUsersByOrganization(
         @PathVariable orgId: UUID
     ): ResponseEntity<List<UserResponseDto>> {
-        val users = userService.getUsersByOrganization(orgId)
+        val users = userService.getUsersByOrganizationResponse(orgId)
         return ResponseEntity.ok(users)
     }
 

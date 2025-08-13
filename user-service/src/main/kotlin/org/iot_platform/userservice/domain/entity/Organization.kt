@@ -14,7 +14,7 @@ data class Organization (
     val id: UUID? = null,
 
     val name: String?,
-    val description: String,
+    val description: String?,
     val contactEmail: String?,
 
     val status: OrganisationStatus = OrganisationStatus.ACTIVE,
