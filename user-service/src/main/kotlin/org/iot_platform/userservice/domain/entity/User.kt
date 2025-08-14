@@ -33,4 +33,5 @@ data class User(
 
     @Column("last_login_at")
     val lastLoginAt: LocalDateTime? = null
+
 )

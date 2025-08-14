@@ -45,12 +45,9 @@ class SecurityConfig(
                     // Device management
                     .pathMatchers("GET", "/api/v1/devices/**").hasAnyAuthority("ROLE_viewer", "SCOPE_device:read")
                     .pathMatchers(
-                        "POST",
-                        "/api/v1/devices/**",
-                        "PUT",
-                        "/api/v1/devices/**",
-                        "DELETE",
-                        "/api/v1/devices/**"
+                        "POST", "/api/v1/devices/**",
+                        "PUT", "/api/v1/devices/**",
+                        "DELETE", "/api/v1/devices/**"
                     )
                     .hasAnyAuthority("SCOPE_devices:write", "ROLE_operator", "ROLE_admin")
 

@@ -30,7 +30,7 @@ class OrganizationController(
     suspend fun getOrganizationById(
         @PathVariable id: UUID
     ): ResponseEntity<OrganizationDto> {
-        val organization = organizationService.getEntity(id)
+        val organization = organizationService.getDtoById(id)
 
         return if (organization != null) {
             ResponseEntity.ok(organization)
@@ -42,7 +42,7 @@ class OrganizationController(
     @GetMapping
     @PreAuthorize("hasRole('admin')")
     suspend fun getAllOrganizations(): ResponseEntity<Flow<OrganizationDto>> {
-        val organizations = organizationService.getAllOrganizations()
+        val organizations = organizationService.getAllOrganizationDtos()
         return ResponseEntity.ok(organizations)
     }
 }

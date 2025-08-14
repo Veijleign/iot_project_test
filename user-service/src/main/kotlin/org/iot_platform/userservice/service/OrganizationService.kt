@@ -18,13 +18,15 @@ class OrganizationService(
     private val organizationRepository: OrganizationRepository,
     private val mapper: OrganizationMapper
 ) {
-    suspend fun createOrganization(dto: OrganizationDto): Organization {
-        return organizationRepository.save(Organization(
+    suspend fun createOrganization(dto: OrganizationDto): OrganizationDto {
+        val org = organizationRepository.save(Organization(
             name = dto.name,
             description = dto.description,
             contactEmail = dto.contactEmail,
             status = dto.status ?: OrganisationStatus.ACTIVE
         ))
+
+        return mapper.toDto(org)
     }
 
     suspend fun deactivateOrganization(orgId: UUID): Organization? {
@@ -39,11 +41,15 @@ class OrganizationService(
     suspend fun getDtoById(orgId: UUID) : OrganizationDto =
         mapper.toDto(getEntity(orgId))
 
-    suspend fun getEntity(orgId: UUID): Organization? =
-        organizationRepository.findById(orgId) ?: throw ChangeSetPersister.NotFoundException("Organization not found")
+    suspend fun getEntity(orgId: UUID): Organization =
+        organizationRepository.findById(orgId)
+            ?: throw Exception("Organization not found with id $orgId")
 
     suspend fun getAllOrganizations() : Flow<Organization> =
         organizationRepository.findAll()
+
+    suspend fun getAllOrganizationDtos() : Flow<OrganizationDto> =
+        mapper.toDtoList(organizationRepository.findAll())
 
     suspend fun getAllActive() : List<Organization> =
         organizationRepository.findAllActive()

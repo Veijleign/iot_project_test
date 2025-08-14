@@ -16,7 +16,7 @@ import java.util.*
 
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 class UserManagementController(
     private val userService: UserService,
     private val organizationService: OrganizationRepository,
@@ -152,48 +152,4 @@ class UserManagementController(
         val users = userService.getUsersByOrganizationResponse(orgId)
         return ResponseEntity.ok(users)
     }
-
-    @GetMapping("/test")
-    suspend fun testEndpoint(): ResponseEntity<Map<String, String>> {
-        return ResponseEntity.ok(
-            mapOf(
-                "message" to "User service is working!",
-                "service" to "user-service",
-                "timestamp" to System.currentTimeMillis().toString()
-            )
-        )
-    }
-
-    @GetMapping("/secure-test")
-    @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    suspend fun secureTest(
-        @AuthenticationPrincipal jwt: Jwt
-    ) : ResponseEntity<Map<String, Any?>> {
-        return ResponseEntity.ok(mapOf(
-            "message" to "Secure endpoint accessed successfully",
-            "user" to jwt.subject,
-            "roles" to extractRoles(jwt),
-            "scopes" to getScopesFromJwt(jwt)
-        ))
-    }
-
-    private fun extractRoles(jwt: Jwt): List<String> {
-        val roles = mutableListOf<String>()
-
-        // Roles from realm_access
-        val realmAccess = jwt.getClaimAsMap("realm_access")
-        if (realmAccess != null) {
-            val realmRoles = realmAccess["roles"]
-            if (realmRoles is List<*>) {
-                roles.addAll(realmRoles.filterIsInstance<String>())
-            }
-        }
-        return roles
-    }
-
-
-    private fun getScopesFromJwt(jwt: Jwt): List<String> {
-        return jwt.getClaimAsStringList("scope") ?: emptyList()
-    }
-
 }

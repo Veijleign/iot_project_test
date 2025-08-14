@@ -36,6 +36,17 @@ spring:
       server:
         webflux:
           routes:
+            - id: testing-routes
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/v1/testing/**
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+
             # User Service Routes
             - id: user-service
               uri: http://localhost:8081

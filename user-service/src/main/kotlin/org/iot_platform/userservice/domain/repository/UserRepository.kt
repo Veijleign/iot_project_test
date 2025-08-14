@@ -1,7 +1,7 @@
 package org.iot_platform.userservice.domain.repository
 
 import org.iot_platform.userservice.domain.entity.User
-import org.springframework.data.jpa.repository.Query
+import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -19,14 +19,14 @@ interface UserRepository : CoroutineCrudRepository<User, UUID> {
 
 
     @Query("""
-        SELECT u FROM users u
+        SELECT * FROM users u
         INNER JOIN user_roles ur ON u.id = ur.user_id
         WHERE ur.role_name = :roleName
     """)
     suspend fun findByRole(roleName: String): List<User>
 
     @Query("""
-        SELECT COUNT(u) FROM users u
+        SELECT COUNT(*) FROM users u
         WHERE u.organization_id = :organizationId
         AND u.status = 'ACTIVE'
     """)

@@ -23,7 +23,7 @@ class SecurityConfig {
                 exhange
                     // Healthchecks
                     .pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/users/test").permitAll() // TODO временно
+                    .pathMatchers("/api/v1/testing/**").permitAll() // TODO временно
 
                     // Anything else - requiers authentication
                     .anyExchange().authenticated()

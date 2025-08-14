@@ -23,15 +23,21 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    // Security OAuth2 Resource Server
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
     // JPA
-    implementation("org.springframework.data:spring-data-jpa")
-    implementation("org.springframework.data:spring-data-relational")
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+//    implementation("org.springframework.data:spring-data-relational")
+    implementation("org.postgresql:r2dbc-postgresql")
+    implementation("io.r2dbc:r2dbc-pool") // пул соединений
+
+
+    // Для валидаций
+    implementation("jakarta.validation:jakarta.validation-api")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -39,9 +45,6 @@ dependencies {
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
