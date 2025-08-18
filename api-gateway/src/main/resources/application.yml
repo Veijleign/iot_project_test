@@ -36,6 +36,7 @@ spring:
       server:
         webflux:
           routes:
+            # Test endpoints
             - id: testing-routes
               uri: http://localhost:8081
               predicates:
@@ -54,6 +55,7 @@ spring:
                 - Path=/api/v1/users/**
               filters:
                 - StripPrefix=1
+                - TokenRelay
                 - name: RequestRateLimiter
                   args:
                     redis-rate-limiter.replenishRate: 10

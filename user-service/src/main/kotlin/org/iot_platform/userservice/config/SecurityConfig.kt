@@ -2,7 +2,7 @@ package org.iot_platform.userservice.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.GrantedAuthority
@@ -13,7 +13,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 
 @Configuration
 @EnableWebFluxSecurity
-@EnableMethodSecurity(prePostEnabled = true) // for using @PreAuthorize
+@EnableReactiveMethodSecurity
 class SecurityConfig {
 
     @Bean
@@ -23,9 +23,10 @@ class SecurityConfig {
                 exhange
                     // Healthchecks
                     .pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/api/v1/testing/**").permitAll() // TODO временно
+                    .pathMatchers("/v1/testing/test").permitAll() // TODO временно
+                    .pathMatchers("/v1/testing/secure-test").authenticated() // TODO временно
 
-                    // Anything else - requiers authentication
+                    // Anything else - requires authentication
                     .anyExchange().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->
@@ -73,6 +74,7 @@ class SecurityConfig {
                     }
                 }
             }
+            println("Extracted authorities: ${authorities.map { it.authority }}")
             authorities as Collection<GrantedAuthority>?
         }
         return ReactiveJwtAuthenticationConverterAdapter(jwtConverter)

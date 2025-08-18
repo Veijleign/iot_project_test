@@ -21,6 +21,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
+#          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs # убрать нахрен
 
   # Jackson Configuration
   jackson:
@@ -70,3 +71,9 @@ user:
 
   organization:
     max-users: 1000
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web.reactive: DEBUG
+    org.springframework.security.oauth2: TRACE

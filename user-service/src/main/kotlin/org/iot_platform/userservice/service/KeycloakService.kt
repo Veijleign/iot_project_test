@@ -18,7 +18,6 @@ class KeycloakService(
     @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String,
 ) {
 
-
     suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getAdminToken()
 

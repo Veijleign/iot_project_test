@@ -54,6 +54,10 @@ class SecurityConfig(
                     // User management - admins only
                     .pathMatchers("/api/v1/users/**").hasAuthority("ROLE_admin")
 
+                    // For test // todo delete later
+                    .pathMatchers("/api/v1/testing/test").permitAll()
+                    .pathMatchers("/api/v1/testing/secure-test").authenticated()
+
                     // Всё остальное - требует аутентификации
                     .anyExchange().authenticated()
             }
