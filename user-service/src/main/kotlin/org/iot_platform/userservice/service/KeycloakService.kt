@@ -1,6 +1,9 @@
 package org.iot_platform.userservice.service
 
+import com.github.benmanes.caffeine.cache.AsyncLoadingCache
+import com.github.benmanes.caffeine.cache.Caffeine
 import kotlinx.coroutines.reactor.awaitSingle
+import mu.KotlinLogging
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -8,6 +11,10 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
+import java.util.concurrent.TimeUnit
+
+private val log = KotlinLogging.logger {}
 
 @Service
 class KeycloakService(
@@ -17,6 +24,12 @@ class KeycloakService(
     @Value("\${keycloak.admin-client-id}") private val adminClientId: String,
     @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String,
 ) {
+
+    private val adminTokenCache: AsyncLoadingCache<String, String> = Caffeine.newBuilder()
+        .expireAfterWrite(4, TimeUnit.MINUTES)
+        .buildAsync { _, _ ->
+            getAdminToken().toFuture()
+        }
 
     suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getAdminToken()
@@ -29,6 +42,24 @@ class KeycloakService(
             .retrieve()
             .bodyToMono(KeycloakUserResponse::class.java)
             .awaitSingle()
+    }
+
+    suspend fun deleteUser(keycloakUserId: String): Boolean {
+        val token = getAdminToken()
+
+        return try {
+            webClient.delete()
+                .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
+                .header("Authorization", "Bearer $token")
+                .retrieve()
+                .toBodilessEntity()
+                .awaitSingle()
+            log.info { "Deletey Keycloak user $keycloakUserId" }
+            true
+        } catch (e: Exception) {
+            log.error(e) { "failed to delete keycloak user $keycloakUserId" }
+            false
+        }
     }
 
     suspend fun getUserById(keycloakUserId: String): KeycloakUserResponse? {
@@ -135,13 +166,17 @@ class KeycloakService(
         }
     }
 
-    private suspend fun getAdminToken(): String {
-        val tokenEndpoint = "/realms/$realm/protocol/openid-connect/token"
-        val tokenResponse = webClient
+    private suspend fun getCachedAdminToken(): String {
+        return adminTokenCache.get("admin-token").await()
+    }
+
+    private fun getAdminToken(): Mono<String> {
+        val tokenEndpoint = "$keycloakUrl/realms/$realm/protocol/openid-connect/token"
+
+        return webClient
             .post()
             .uri(tokenEndpoint)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//            .header("Content-Type", "application/x-www-form-urlencoded")
             .body(
                 BodyInserters.fromFormData("grant_type", "client_credentials")
                     .with("client_id", adminClientId)
@@ -149,8 +184,6 @@ class KeycloakService(
             )
             .retrieve()
             .bodyToMono(TokenResponse::class.java)
-            .awaitSingle()
-
-        return tokenResponse.accessToken
+            .map { it.accessToken }
     }
 }

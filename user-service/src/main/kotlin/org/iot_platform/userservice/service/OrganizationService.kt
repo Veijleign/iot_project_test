@@ -1,6 +1,7 @@
 package org.iot_platform.userservice.service
 
 import kotlinx.coroutines.flow.Flow
+import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.Organization
 import org.iot_platform.userservice.domain.entity.User
 import org.iot_platform.userservice.domain.entity.eKey.OrganisationStatus
@@ -43,7 +44,7 @@ class OrganizationService(
 
     suspend fun getEntity(orgId: UUID): Organization =
         organizationRepository.findById(orgId)
-            ?: throw Exception("Organization not found with id $orgId")
+            ?: throw NotFoundException("Organization not found with id $orgId") // todo test
 
     suspend fun getAllOrganizations() : Flow<Organization> =
         organizationRepository.findAll()

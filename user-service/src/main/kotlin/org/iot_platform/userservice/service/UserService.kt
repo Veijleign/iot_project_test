@@ -1,6 +1,7 @@
 package org.iot_platform.userservice.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.iot_platform.userservice.config.exception.AlreadyExistsException
 import org.iot_platform.userservice.domain.entity.User
 import org.iot_platform.userservice.domain.entity.UserRole
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
@@ -13,6 +14,7 @@ import org.iot_platform.userservice.payload.keycloak.KeycloakUserUpdateRequest
 import org.iot_platform.userservice.payload.user.UserProfileUpdateDto
 import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -26,7 +28,12 @@ class UserService(
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService
 ) {
+
     suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
+
+        if (userRepository.findByUsername(registration.username) != null || userRepository.findByEmail(registration.email) != null)
+            throw AlreadyExistsException("Username ${registration.username} already exists")
+
         val keycloakUser = keycloakService.createUser(
             KeycloakUserCreationRequest(
                 registration.username,

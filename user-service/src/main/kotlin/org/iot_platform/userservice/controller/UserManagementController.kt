@@ -16,12 +16,11 @@ import java.util.*
 
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/v1/users")
 class UserManagementController(
     private val userService: UserService,
     private val organizationService: OrganizationRepository,
 ) {
-
     @PostMapping("/register")
     suspend fun registerUser(
         @Valid @RequestBody registrationDto: UserRegistrationDto

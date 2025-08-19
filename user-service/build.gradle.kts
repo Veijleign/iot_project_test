@@ -28,10 +28,11 @@ dependencies {
 
     // JPA
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-//    implementation("org.springframework.data:spring-data-relational")
     implementation("org.postgresql:r2dbc-postgresql")
     implementation("io.r2dbc:r2dbc-pool") // пул соединений
 
+    // Кэширование
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
 
     // Для валидаций
     implementation("jakarta.validation:jakarta.validation-api")
