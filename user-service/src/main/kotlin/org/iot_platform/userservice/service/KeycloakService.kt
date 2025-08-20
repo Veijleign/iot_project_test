@@ -3,6 +3,8 @@ package org.iot_platform.userservice.service
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.future.awai
+import kotlinx.coroutines.future.await
 import mu.KotlinLogging
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
