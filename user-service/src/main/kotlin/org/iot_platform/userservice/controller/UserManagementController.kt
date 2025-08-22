@@ -25,13 +25,9 @@ class UserManagementController(
     suspend fun registerUser(
         @Valid @RequestBody registrationDto: UserRegistrationDto
     ): ResponseEntity<UserResponseDto> {
-        return try {
-            val user = userService.registerUser(registrationDto)
-            ResponseEntity.status(HttpStatus.CREATED).body(user)
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(null)
-        }
+
+        val user = userService.registerUser(registrationDto)
+        return ResponseEntity.status(HttpStatus.CREATED).body(user)
     }
 
     @GetMapping("/me")
@@ -93,14 +89,18 @@ class UserManagementController(
 
         val success = userService.assignRole(userId, roleName, currentUser.id)
 
-        return if(success) {
-            ResponseEntity.ok(mapOf(
-                "message" to "Role $roleName assigned to user successfully"
-            ))
+        return if (success) {
+            ResponseEntity.ok(
+                mapOf(
+                    "message" to "Role $roleName assigned to user successfully"
+                )
+            )
         } else {
-            ResponseEntity.badRequest().body(mapOf(
-                "error" to "Failed to assign role or role already exists"
-            ))
+            ResponseEntity.badRequest().body(
+                mapOf(
+                    "error" to "Failed to assign role or role already exists"
+                )
+            )
         }
     }
 
@@ -109,17 +109,21 @@ class UserManagementController(
     suspend fun removeRoleFromUser(
         @PathVariable userId: UUID,
         @PathVariable roleName: String,
-    ) : ResponseEntity<Map<String, String>> {
+    ): ResponseEntity<Map<String, String>> {
         val success = userService.removeRole(userId, roleName)
 
-        return if(success) {
-            ResponseEntity.ok(mapOf(
-                "message" to "Role $roleName removed from user successfully"
-            ))
+        return if (success) {
+            ResponseEntity.ok(
+                mapOf(
+                    "message" to "Role $roleName removed from user successfully"
+                )
+            )
         } else {
-            ResponseEntity.badRequest().body(mapOf(
-                "error" to "Failed to remove role from user"
-            ))
+            ResponseEntity.badRequest().body(
+                mapOf(
+                    "error" to "Failed to remove role from user"
+                )
+            )
         }
     }
 
@@ -127,19 +131,23 @@ class UserManagementController(
     @PreAuthorize("hasRole('admin')")
     suspend fun deactivateUser(
         @PathVariable userId: UUID,
-    ) : ResponseEntity<Map<String, String>> {
+    ): ResponseEntity<Map<String, String>> {
         val success = userService.deactivateUser(userId)
 
-        return if(success) {
-            ResponseEntity.ok(mapOf(
-                "message" to "User deactivated successfully"
-            ))
+        return if (success) {
+            ResponseEntity.ok(
+                mapOf(
+                    "message" to "User deactivated successfully"
+                )
+            )
         } else {
             ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(mapOf(
-                "error" to "Failed deactivate user"
-            ))
+                .body(
+                    mapOf(
+                        "error" to "Failed deactivate user"
+                    )
+                )
         }
     }
 

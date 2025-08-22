@@ -2,9 +2,8 @@ package org.iot_platform.userservice.service
 
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache
 import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.future.awai
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
@@ -34,7 +33,7 @@ class KeycloakService(
         }
 
     suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
 
         return webClient.post()
             .uri("$keycloakUrl/admin/realms/$realm/users")
@@ -47,8 +46,7 @@ class KeycloakService(
     }
 
     suspend fun deleteUser(keycloakUserId: String): Boolean {
-        val token = getAdminToken()
-
+        val token = getCachedAdminToken()
         return try {
             webClient.delete()
                 .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
@@ -65,7 +63,7 @@ class KeycloakService(
     }
 
     suspend fun getUserById(keycloakUserId: String): KeycloakUserResponse? {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
 
         return try {
             webClient.get()
@@ -80,7 +78,7 @@ class KeycloakService(
     }
 
     suspend fun updateUser(keycloakUserId: String, userUpdate: KeycloakUserUpdateRequest): Boolean {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
 
         return try {
             webClient.put()
@@ -98,8 +96,7 @@ class KeycloakService(
     }
 
     suspend fun assignRoleToUser(keycloakUserId: String, roleName: String): Boolean {
-        val token = getAdminToken()
-
+        val token = getCachedAdminToken()
         val role = getRealmRole(roleName) ?: return false
 
         return try {
@@ -118,7 +115,7 @@ class KeycloakService(
     }
 
     suspend fun removeRoleFromUser(keycloakUserId: String, roleName: String): Boolean {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
         val role = getRealmRole(roleName) ?: return false
 
         return try {
@@ -138,7 +135,7 @@ class KeycloakService(
     }
 
     suspend fun getUserRoles(keycloakUserId: String): List<KeycloakRole> {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
 
         return try {
             webClient.get()
@@ -154,7 +151,7 @@ class KeycloakService(
     }
 
     private suspend fun getRealmRole(roleName: String): KeycloakRole? {
-        val token = getAdminToken()
+        val token = getCachedAdminToken()
 
         return try {
             webClient.get()
