@@ -18,29 +18,43 @@ import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
 import org.iot_platform.userservice.utils.orThrow
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.time.LocalDateTime
 import java.util.*
 
-@Transactional
+
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val organizationRepository: OrganizationRepository,
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService,
-    // Внедряем значение из application.yml
     @Value("\${user.default-role}") private val defaultRole: String
 ) {
 
+    @Transactional
     suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
 
         if (userRepository.findByUsername(registration.username) != null || userRepository.findByEmail(registration.email) != null)
             throw AlreadyExistsException("Username or email already exists")
 
+        val keycloakUser = registerUserInKeycloak(registration)
+
+        try {
+            val user = saveUserRegisteredInKeycloak(keycloakUser, registration)
+
+            assignRole(user.id!!, defaultRole, null)
+
+            return mapToResponseDto(user, listOf(defaultRole))
+        } catch (e: Exception) {
+            keycloakService.deleteUser(keycloakUser.id)
+            throw RuntimeException("Failed to save user to the database")
+        }
+    }
+
+    private suspend fun registerUserInKeycloak(registration: UserRegistrationDto) : KeycloakUserResponse {
         val keycloakRequest = KeycloakUserCreationRequest(
             registration.username,
             registration.email,
@@ -61,27 +75,21 @@ class UserService(
         } catch (e: WebClientResponseException.Conflict) {
             throw AlreadyExistsException("Username or email already exists")
         }
+        return keycloakUser
+    }
 
-        try {
-            val user = userRepository.save(
-                User(
-                    keycloakUserId = keycloakUser.id,
-                    username = registration.username,
-                    email = registration.email,
-                    firstName = registration.firstName,
-                    lastName = registration.lastName,
-                    organisationId = registration.organisationId,
-                    status = UserStatus.ACTIVE,
-                )
+    suspend fun saveUserRegisteredInKeycloak(keycloakUser: KeycloakUserResponse, registration: UserRegistrationDto) : User {
+        return userRepository.save(
+            User(
+                keycloakUserId = keycloakUser.id,
+                username = registration.username,
+                email = registration.email,
+                firstName = registration.firstName,
+                lastName = registration.lastName,
+                organisationId = registration.organisationId,
+                status = UserStatus.ACTIVE,
             )
-
-            assignRole(user.id!!, defaultRole, null)
-
-            return mapToResponseDto(user, listOf(defaultRole))
-        } catch (e: Exception) {
-            keycloakService.deleteUser(keycloakUser.id)
-            throw RuntimeException("Failed to save user to the database")
-        }
+        )
     }
 
     suspend fun getUserEntity(userId: UUID): User {

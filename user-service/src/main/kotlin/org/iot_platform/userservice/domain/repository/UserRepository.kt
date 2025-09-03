@@ -31,6 +31,10 @@ interface UserRepository : CoroutineCrudRepository<User, UUID> {
     """)
     suspend fun countActiveUsersByOrganization(organisationId: UUID): Long
 
-    @Query("SELECT EXISTS(SELECT 1 FROM users u WHERE u.username =: username OR u.email =:email)")
+    @Query("""
+        SELECT EXISTS(
+        SELECT 1 FROM users u 
+        WHERE u.username =: username OR u.email =:email)
+    """)
     suspend fun existsByUsernameOrEmail(username: String, email: String): Boolean
 }

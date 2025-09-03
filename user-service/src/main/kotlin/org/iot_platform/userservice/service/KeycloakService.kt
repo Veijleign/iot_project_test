@@ -54,10 +54,10 @@ class KeycloakService(
                 .retrieve()
                 .toBodilessEntity()
                 .awaitSingle()
-            log.info { "Deletey Keycloak user $keycloakUserId" }
+            log.info { "Delete Keycloak user $keycloakUserId" }
             true
         } catch (e: Exception) {
-            log.error(e) { "failed to delete keycloak user $keycloakUserId" }
+            log.error(e) { "CRITICAL: failed to delete keycloak user $keycloakUserId" }
             false
         }
     }
