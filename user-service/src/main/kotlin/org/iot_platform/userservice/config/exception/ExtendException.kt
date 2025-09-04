@@ -29,3 +29,4 @@ class NotFoundException(message: String) : ExtendException(ExtendError.NOT_FOUND
 class AlreadyExistsException(message: String) : ExtendException(ExtendError.EXIST_ERROR, message)
 class ValidationException(message: String) : ExtendException(ExtendError.BAD_REQUEST_ERROR, message)
 class AccessDeniedException(message: String) : ExtendException(ExtendError.ACCESS_ERROR, message)
+class KeycloakIntegrationException(message: String, cause: Throwable? = null) : ExtendException(ExtendError.UNKNOWN_ERROR, message, cause)

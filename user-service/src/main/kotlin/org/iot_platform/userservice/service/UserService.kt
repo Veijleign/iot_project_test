@@ -31,55 +31,61 @@ class UserService(
     private val organizationRepository: OrganizationRepository,
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService,
-    @Value("\${user.default-role}") private val defaultRole: String
+    @Value("\${user.default-role}") private val defaultRole: String,
+    private val self: UserService
 ) {
-
-    @Transactional
     suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
-
-        if (userRepository.findByUsername(registration.username) != null || userRepository.findByEmail(registration.email) != null)
+        if (userRepository.existsByUsernameOrEmail(registration.username, registration.email))
             throw AlreadyExistsException("Username or email already exists")
 
         val keycloakUser = registerUserInKeycloak(registration)
 
         try {
-            val user = saveUserRegisteredInKeycloak(keycloakUser, registration)
+            // Транзакция к нашей БД
+            val user = self.saveUserProfileAndAssignRole(keycloakUser, registration)
 
-            assignRole(user.id!!, defaultRole, null)
+            // Синхронизация с Keycloak
+            keycloakService.assignRoleToUser(user.keycloakUserId, defaultRole)
 
             return mapToResponseDto(user, listOf(defaultRole))
         } catch (e: Exception) {
+            // Компенсация если что-то не так
             keycloakService.deleteUser(keycloakUser.id)
             throw RuntimeException("Failed to save user to the database")
         }
     }
 
-    private suspend fun registerUserInKeycloak(registration: UserRegistrationDto) : KeycloakUserResponse {
-        val keycloakRequest = KeycloakUserCreationRequest(
-            registration.username,
-            registration.email,
-            registration.firstName,
-            registration.lastName,
-            credentials = listOf(
-                KeycloakCredential(
-                    type = "password",
-                    value = registration.password,
-                    temporary = false
-                )
-            )
-        )
-
+    private suspend fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse {
         val keycloakUser: KeycloakUserResponse
         try {
-            keycloakUser = keycloakService.createUser(keycloakRequest)
+            keycloakUser = keycloakService.createUser(
+                KeycloakUserCreationRequest(
+                    registration.username,
+                    registration.email,
+                    registration.firstName,
+                    registration.lastName,
+                    credentials = listOf(
+                        KeycloakCredential(
+                            type = "password",
+                            value = registration.password,
+                            temporary = false
+                        )
+                    )
+                )
+            )
         } catch (e: WebClientResponseException.Conflict) {
             throw AlreadyExistsException("Username or email already exists")
         }
         return keycloakUser
     }
 
-    suspend fun saveUserRegisteredInKeycloak(keycloakUser: KeycloakUserResponse, registration: UserRegistrationDto) : User {
-        return userRepository.save(
+    /* Только логика работы с БД*/
+    @Transactional
+    suspend fun saveUserProfileAndAssignRole(
+        keycloakUser: KeycloakUserResponse,
+        registration: UserRegistrationDto
+    ): User {
+        val user = userRepository.save(
             User(
                 keycloakUserId = keycloakUser.id,
                 username = registration.username,
@@ -90,6 +96,9 @@ class UserService(
                 status = UserStatus.ACTIVE,
             )
         )
+
+        assignLocalRole(user.id!!, defaultRole, null)
+        return user
     }
 
     suspend fun getUserEntity(userId: UUID): User {
@@ -148,11 +157,7 @@ class UserService(
         return mapToResponseDto(saved, roles)
     }
 
-    suspend fun assignRole(
-        userId: UUID,
-        roleName: String,
-        grantedBy: UUID?
-    ): Boolean {
+    suspend fun assignLocalRole(userId: UUID, roleName: String, grantedBy: UUID?): Boolean {
         val existing = userRoleRepository.findByUserIdAndRoleName(userId, roleName)
         if (existing != null) return false
         val userRole = UserRole(
@@ -160,17 +165,7 @@ class UserService(
             roleName = roleName,
             grantedBy = grantedBy ?: userId
         )
-
         userRoleRepository.save(userRole)
-
-        // Синхронизируем с Keycloak
-        val user = userRepository.findById(userId)
-        if (user != null) {
-            keycloakService.assignRoleToUser(
-                user.keycloakUserId,
-                roleName
-            )
-        }
         return true
     }
 

@@ -55,4 +55,9 @@ class GlobalExceptionHandler {
         return handleExtendException(ex)
     }
 
+    @ExceptionHandler(KeycloakIntegrationException::class)
+    fun handleKeycloakIntegrationException(ex: KeycloakIntegrationException): ResponseEntity<ExceptionBody> {
+        return handleExtendException(ex)
+    }
+
 }

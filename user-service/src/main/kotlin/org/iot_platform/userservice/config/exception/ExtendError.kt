@@ -8,7 +8,7 @@ enum class ExtendError(
 ) {
     UNKNOWN_ERROR(-1L, HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND_ERROR(1L, HttpStatus.NOT_FOUND),
-    EXIST_ERROR(2L, HttpStatus.CONFLICT), // FOUND → CONFLICT для ясности
+    EXIST_ERROR(2L, HttpStatus.CONFLICT), // FOUND -> CONFLICT для ясности
     BAD_REQUEST_ERROR(3L, HttpStatus.BAD_REQUEST),
     ACCESS_ERROR(4L, HttpStatus.FORBIDDEN),
     WRONG_ENTITY(5L, HttpStatus.BAD_REQUEST);

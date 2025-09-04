@@ -5,6 +5,9 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
+import org.iot_platform.userservice.config.exception.ExtendError
+import org.iot_platform.userservice.config.exception.ExtendException
+import org.iot_platform.userservice.config.exception.KeycloakIntegrationException
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -45,7 +48,7 @@ class KeycloakService(
             .awaitSingle()
     }
 
-    suspend fun deleteUser(keycloakUserId: String): Boolean {
+    suspend fun deleteUser(keycloakUserId: String)  {
         val token = getCachedAdminToken()
         return try {
             webClient.delete()
@@ -55,14 +58,13 @@ class KeycloakService(
                 .toBodilessEntity()
                 .awaitSingle()
             log.info { "Delete Keycloak user $keycloakUserId" }
-            true
         } catch (e: Exception) {
             log.error(e) { "CRITICAL: failed to delete keycloak user $keycloakUserId" }
-            false
+            throw KeycloakIntegrationException("Failed to delete keycloak user $keycloakUserId", e)
         }
     }
 
-    suspend fun getUserById(keycloakUserId: String): KeycloakUserResponse? {
+    suspend fun getUserById(keycloakUserId: String): KeycloakUserResponse {
         val token = getCachedAdminToken()
 
         return try {
@@ -73,14 +75,15 @@ class KeycloakService(
                 .bodyToMono(KeycloakUserResponse::class.java)
                 .awaitSingle()
         } catch (e: Exception) {
-            null
+            log.error(e) { "Failed to get user $keycloakUserId" }
+            throw KeycloakIntegrationException("Failed to get user $keycloakUserId", e)
         }
     }
 
-    suspend fun updateUser(keycloakUserId: String, userUpdate: KeycloakUserUpdateRequest): Boolean {
+    suspend fun updateUser(keycloakUserId: String, userUpdate: KeycloakUserUpdateRequest) {
         val token = getCachedAdminToken()
 
-        return try {
+        try {
             webClient.put()
                 .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
                 .header("Authorization", "Bearer $token")
@@ -89,17 +92,17 @@ class KeycloakService(
                 .retrieve()
                 .bodyToMono(Void::class.java)
                 .awaitSingle()
-            true
         } catch (e: Exception) {
-            false
+            log.error(e) { "Failed to update user $keycloakUserId" }
+            throw KeycloakIntegrationException("Failed to update user $keycloakUserId", e)
         }
     }
 
-    suspend fun assignRoleToUser(keycloakUserId: String, roleName: String): Boolean {
+    suspend fun assignRoleToUser(keycloakUserId: String, roleName: String) {
         val token = getCachedAdminToken()
-        val role = getRealmRole(roleName) ?: return false
+        val role = getRealmRole(roleName)
 
-        return try {
+        try {
             webClient.post()
                 .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId/role-mappings/realm")
                 .header("Authorization", "Bearer $token")
@@ -108,17 +111,17 @@ class KeycloakService(
                 .retrieve()
                 .bodyToMono(Void::class.java)
                 .awaitSingle()
-            true
         } catch (e: Exception) {
-            false
+            log.error(e) { "Failed to assign role to user $keycloakUserId" }
+            throw KeycloakIntegrationException("Failed to assign role to user $keycloakUserId", e)
         }
     }
 
-    suspend fun removeRoleFromUser(keycloakUserId: String, roleName: String): Boolean {
+    suspend fun removeRoleFromUser(keycloakUserId: String, roleName: String) {
         val token = getCachedAdminToken()
-        val role = getRealmRole(roleName) ?: return false
+        val role = getRealmRole(roleName)
 
-        return try {
+        try {
             webClient.method(HttpMethod.DELETE)
                 .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId/role-mappings/realm")
                 .header("Authorization", "Bearer $token")
@@ -127,10 +130,9 @@ class KeycloakService(
                 .retrieve()
                 .bodyToMono(Void::class.java)
                 .awaitSingle()
-
-            true
         } catch (e: Exception) {
-            false
+            log.error(e) { "Failed to remove role to user $keycloakUserId" }
+            throw KeycloakIntegrationException("Failed to remove role to user $keycloakUserId", e)
         }
     }
 
@@ -150,7 +152,7 @@ class KeycloakService(
         }
     }
 
-    private suspend fun getRealmRole(roleName: String): KeycloakRole? {
+    private suspend fun getRealmRole(roleName: String): KeycloakRole {
         val token = getCachedAdminToken()
 
         return try {
@@ -161,7 +163,8 @@ class KeycloakService(
                 .bodyToMono(KeycloakRole::class.java)
                 .awaitSingle()
         } catch (e: Exception) {
-            null
+            log.error(e) { "Failed to get realm role to user" }
+            throw KeycloakIntegrationException("Failed to get realm role to user", e)
         }
     }
 

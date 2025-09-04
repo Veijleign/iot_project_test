@@ -87,7 +87,7 @@ class UserManagementController(
     ): ResponseEntity<Map<String, String>> {
         val currentUser = userService.getUserByKeycloakId(jwt.subject) ?: return ResponseEntity.notFound().build()
 
-        val success = userService.assignRole(userId, roleName, currentUser.id)
+        val success = userService.assignLocalRole(userId, roleName, currentUser.id)
 
         return if (success) {
             ResponseEntity.ok(
