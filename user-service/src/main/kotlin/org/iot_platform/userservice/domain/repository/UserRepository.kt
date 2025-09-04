@@ -33,7 +33,7 @@ interface UserRepository : CoroutineCrudRepository<User, UUID> {
 
     @Query("""
         SELECT EXISTS(
-        SELECT 1 FROM users u 
+        SELECT 1 FROM users u
         WHERE u.username =: username OR u.email =:email)
     """)
     suspend fun existsByUsernameOrEmail(username: String, email: String): Boolean

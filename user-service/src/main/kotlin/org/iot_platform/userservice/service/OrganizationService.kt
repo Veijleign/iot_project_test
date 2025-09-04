@@ -31,7 +31,7 @@ class OrganizationService(
     }
 
     suspend fun deactivateOrganization(orgId: UUID): Organization? {
-        val existing = getEntity(orgId) ?: return null
+        val existing = getEntity(orgId)
         val updated = existing.copy(
             status = OrganisationStatus.INACTIVE,
             updatedAt = LocalDateTime.now()
@@ -58,7 +58,7 @@ class OrganizationService(
     suspend fun getOrganizationUsers(orgId: UUID): List<User> = userService.getAllUsersByOrganization(orgId)
 
     suspend fun isOrganizationActive(orgId: UUID): Boolean {
-        val existing = getEntity(orgId) ?: return false
+        val existing = getEntity(orgId)
         return existing.status == OrganisationStatus.ACTIVE
     }
 

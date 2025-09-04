@@ -33,7 +33,7 @@ class UserManagementController(
     @GetMapping("/me")
     suspend fun getCurrentUser(
         @AuthenticationPrincipal jwt: Jwt
-    ): ResponseEntity<UserResponseDto> { // не очень хорошо что null может быть
+    ): ResponseEntity<UserResponseDto> {
         val keycloakUserId = jwt.subject
 
         // update last time log in

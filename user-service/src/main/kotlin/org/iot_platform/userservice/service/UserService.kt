@@ -1,6 +1,7 @@
 package org.iot_platform.userservice.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import mu.KotlinLogging
 import org.iot_platform.userservice.config.exception.AlreadyExistsException
 import org.iot_platform.userservice.config.exception.ExtendError
 import org.iot_platform.userservice.domain.entity.User
@@ -18,25 +19,28 @@ import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
 import org.iot_platform.userservice.utils.orThrow
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.time.LocalDateTime
 import java.util.*
 
+private val log = KotlinLogging.logger {}
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val organizationRepository: OrganizationRepository,
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService,
     @Value("\${user.default-role}") private val defaultRole: String,
-    private val self: UserService
+    @Lazy private val self: UserService // TODO переделать
 ) {
     suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
-        if (userRepository.existsByUsernameOrEmail(registration.username, registration.email))
+        if (userRepository.existsByUsernameOrEmail(registration.username, registration.email)) {
+            log.error { "Username or email already exists" }
             throw AlreadyExistsException("Username or email already exists")
+        }
 
         val keycloakUser = registerUserInKeycloak(registration)
 
