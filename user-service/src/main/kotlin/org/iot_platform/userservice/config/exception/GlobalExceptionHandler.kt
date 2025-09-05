@@ -1,9 +1,12 @@
 package org.iot_platform.userservice.config.exception
 
-import org.springframework.http.HttpStatus
+import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.util.*
+
+private val log = KotlinLogging.logger {}
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -23,6 +26,11 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ExceptionBody> {
+        val incidentId = UUID.randomUUID().toString()
+//        log.error(ex) { "Unhandled exception, incidentId=$incidentId" }
+
+        val safeMessage = "Unexpected server error. Incident id: $incidentId"
+
         val extendEx = ExtendException.of(ex)
         return ResponseEntity
             .status(extendEx.error.status)
@@ -30,7 +38,7 @@ class GlobalExceptionHandler {
                 ExceptionBody(
                     internalCode = extendEx.error.internalCode,
                     status = extendEx.error.status,
-                    errorMessage = extendEx.message ?: "Unexpected error occurred"
+                    errorMessage = safeMessage
                 )
             )
     }

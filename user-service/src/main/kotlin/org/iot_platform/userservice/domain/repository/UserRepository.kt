@@ -3,6 +3,7 @@ package org.iot_platform.userservice.domain.repository
 import org.iot_platform.userservice.domain.entity.User
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -31,10 +32,9 @@ interface UserRepository : CoroutineCrudRepository<User, UUID> {
     """)
     suspend fun countActiveUsersByOrganization(organisationId: UUID): Long
 
-    @Query("""
-        SELECT EXISTS(
-        SELECT 1 FROM users u
-        WHERE u.username =: username OR u.email =:email)
-    """)
-    suspend fun existsByUsernameOrEmail(username: String, email: String): Boolean
+
+    suspend fun countUserByUsernameOrEmail(
+        username: String,
+        email: String
+    ): Int
 }

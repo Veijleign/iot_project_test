@@ -1,5 +1,9 @@
 package org.iot_platform.userservice.config.exception
 
+import mu.KotlinLogging
+
+private val log = KotlinLogging.logger {}
+
 open class ExtendException(
     val error: ExtendError,
     message: String,
@@ -16,11 +20,14 @@ open class ExtendException(
         }
 
         fun of(exception: Exception): ExtendException {
-            return if (exception is ExtendException) {
-                exception
-            } else {
-                ExtendException(ExtendError.UNKNOWN_ERROR, exception.message ?: "UnknownError", exception)
-            }
+            if (exception is ExtendException) return exception
+
+            log.error(exception) { "Unhandled exception converted to ExtendException" }
+
+            return ExtendException(
+                ExtendError.UNKNOWN_ERROR,
+                "Internal Server Error",
+            )
         }
     }
 }

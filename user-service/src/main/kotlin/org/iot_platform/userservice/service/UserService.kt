@@ -37,7 +37,7 @@ class UserService(
     @Lazy private val self: UserService // TODO переделать
 ) {
     suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
-        if (userRepository.existsByUsernameOrEmail(registration.username, registration.email)) {
+        if (userRepository.countUserByUsernameOrEmail(registration.username, registration.email) > 0) {
             log.error { "Username or email already exists" }
             throw AlreadyExistsException("Username or email already exists")
         }
