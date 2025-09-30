@@ -20,16 +20,19 @@ repositories {
 
 dependencies {
     // Spring Boot Starters
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // security
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
     // JPA
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("org.postgresql:r2dbc-postgresql")
-    implementation("io.r2dbc:r2dbc-pool") // пул соединений
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    // PostgreSQL JDBC driver
+    runtimeOnly("org.postgresql:postgresql")
 
     // Кэширование
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
@@ -43,6 +46,9 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    // Liquibase
+    implementation("org.liquibase:liquibase-core")
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")

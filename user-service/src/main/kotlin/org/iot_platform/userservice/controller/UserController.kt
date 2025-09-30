@@ -17,7 +17,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/v1/users")
-class UserManagementController(
+class UserController(
     private val userService: UserService,
     private val organizationService: OrganizationRepository,
 ) {

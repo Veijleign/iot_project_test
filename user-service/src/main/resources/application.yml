@@ -5,28 +5,37 @@ spring:
   application:
     name: user-service
 
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/iot_platform
+  # r2dbc connection
+  datasource:
+    url: jdbc:postgresql://localhost:5432/iot_platform
     username: postgres
     password: admin # надо выносить в пропсы
-    pool:
-      enabled: true
-      initial-size: 5
-      max-size: 20
-      max-idle-time: 30m
-      validation-query: SELECT 1
+    driver-class-name: org.postgresql.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # security config
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
-#          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs # убрать нахрен
 
   # Jackson Configuration
   jackson:
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: NON_NULL
+
+  # liquibase config
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
 
 keycloak:
   server-url: https://37.233.82.76.nip.io
@@ -57,7 +66,7 @@ app:
   security:
     cors:
       allowed-origins:
-        - http://localhost:3000
+        - http://localhost:8090
         - https://37.233.82.76.nip.io
       allowed-methods: GET,POST,PUT,DELETE,OPTIONS
       allowed-headers: "*"
