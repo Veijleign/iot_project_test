@@ -1,27 +1,27 @@
 package org.iot_platform.userservice.domain.entity
 
+import jakarta.persistence.*
 import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import java.time.Instant
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
-@Table("user_roles")
-data class UserRole(
+@Entity
+@Table(name = "user_roles")
+class UserRole(
     @Id
-    val id: UUID? = null,
+    @GeneratedValue(strategy = GenerationType.UUID)
+    var id: UUID? = null,
 
-    @Column("user_id")
-    val userId: UUID,
+    @Column(name = "user_id")
+    var userId: UUID,
 
-    val roleName: String, // admin, operator, viewer
-    val scope: String? = null, // optional: specific scope like "building:123"
+    var roleName: String, // admin, operator, viewer
+    var scope: String? = null, // optional: specific scope like "building:123"
 
-    @Column("granted_at")
-    val grantedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "granted_at")
+    var grantedAt: LocalDateTime = LocalDateTime.now(),
 
-    @Column("granted_by")
-    val grantedBy: UUID, // who issued a role
+    @Column(name = "granted_by")
+    var grantedBy: UUID, // who issued a role
 
 )

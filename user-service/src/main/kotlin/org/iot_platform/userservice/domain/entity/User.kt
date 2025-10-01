@@ -1,37 +1,57 @@
 package org.iot_platform.userservice.domain.entity
 
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
 import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 import java.util.*
 
-@Table("users")
-data class User(
+@Entity
+@Table(name = "users")
+class User(
     @Id
-    val id: UUID? = null,
+    @GeneratedValue(strategy = GenerationType.UUID)
+    var id: UUID? = null,
 
-    @Column("keycloak_user_id")
-    val keycloakUserId: String, // id in Keycloak system
+    @Column(name = "keycloak_user_id")
+    var keycloakUserId: String, // id in Keycloak system
 
-    val username: String,
-    val email: String,
-    val firstName: String?,
-    val lastName: String?,
+    var username: String,
+    var email: String,
 
-    @Column("organization_id")
-    val organisationId: UUID?,
-    val status: UserStatus = UserStatus.ACTIVE,
-    val preferences: String? = null, // JSON with user settings
+    @Column(name = "first_name")
+    var firstName: String?,
 
-    @Column("created_at")
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "last_name")
+    var lastName: String?,
 
-    @Column("updated_at")
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "organization_id")
+    var organisationId: UUID?,
 
-    @Column("last_login_at")
-    val lastLoginAt: LocalDateTime? = null
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var status: UserStatus = UserStatus.ACTIVE,
+    var preferences: String? = null, // JSON with user settings
 
-)
+    @CreationTimestamp
+    @Column(name = "created_at")
+    var createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "last_login_at")
+    var lastLoginAt: LocalDateTime? = null
+) {
+    override fun equals(other: Any?) = when {
+        this === other -> true
+        other !is User -> false
+        id == null || other.id == null -> false
+        else -> id == other.id
+    }
+
+    override fun hashCode() = id?.hashCode() ?: 31
+}
