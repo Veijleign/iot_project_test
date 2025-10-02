@@ -19,7 +19,7 @@ object OrganizationMapper {
         )
     }
 
-    fun toDtoList(organizations: Flow<Organization>): Flow<OrganizationDto> {
+    fun toDtoList(organizations: List<Organization>): List<OrganizationDto> {
         return organizations.map { toDto(it) }
     }
 

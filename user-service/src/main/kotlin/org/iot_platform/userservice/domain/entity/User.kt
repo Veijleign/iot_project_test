@@ -2,6 +2,7 @@ package org.iot_platform.userservice.domain.entity
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.UpdateTimestamp
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
 import org.springframework.data.annotation.Id
@@ -12,7 +13,9 @@ import java.util.*
 @Table(name = "users")
 class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     var id: UUID? = null,
 
     @Column(name = "keycloak_user_id")

@@ -1,17 +1,17 @@
 package org.iot_platform.userservice.domain.repository
 
 import org.iot_platform.userservice.domain.entity.Organization
-import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface OrganizationRepository : CoroutineCrudRepository<Organization, UUID> {
+interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
-    suspend fun findByName(name: String): Organization?
+    fun findByName(name: String): Organization?
 
     @Query("SELECT o  FROM Organization o WHERE o.status = 'ACTIVE'")
-    suspend fun findAllActive(): List<Organization>
+    fun findAllActive(): List<Organization>
 
 }

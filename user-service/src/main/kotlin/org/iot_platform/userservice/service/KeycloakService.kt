@@ -5,16 +5,17 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
-import org.iot_platform.userservice.config.exception.ExtendError
-import org.iot_platform.userservice.config.exception.ExtendException
+import org.iot_platform.userservice.config.exception.AlreadyExistsException
 import org.iot_platform.userservice.config.exception.KeycloakIntegrationException
 import org.iot_platform.userservice.payload.keycloak.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.util.concurrent.TimeUnit
 
@@ -28,7 +29,6 @@ class KeycloakService(
     @Value("\${keycloak.admin-client-id}") private val adminClientId: String,
     @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String,
 ) {
-
     private val adminTokenCache: AsyncLoadingCache<String, String> = Caffeine.newBuilder()
         .expireAfterWrite(4, TimeUnit.MINUTES)
         .buildAsync { _, _ ->
@@ -37,30 +37,49 @@ class KeycloakService(
 
     suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getCachedAdminToken()
-
-        return webClient.post()
-            .uri("$keycloakUrl/admin/realms/$realm/users")
-            .header("Authorization", "Bearer $token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(userRegistrationDto)
-            .retrieve()
-            .bodyToMono(KeycloakUserResponse::class.java)
-            .awaitSingle()
-    }
-
-    suspend fun deleteUser(keycloakUserId: String)  {
-        val token = getCachedAdminToken()
-        return try {
-            webClient.delete()
-                .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
+        try {
+            return webClient.post()
+                .uri("$keycloakUrl/admin/realms/$realm/users")
                 .header("Authorization", "Bearer $token")
-                .retrieve()
-                .toBodilessEntity()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(userRegistrationDto)
+                .exchangeToMono { resp ->
+                    when {
+                        resp.statusCode().is2xxSuccessful -> {
+                            // try read body; if empty, extract Location header and GET user by id
+                            resp.bodyToMono(KeycloakUserResponse::class.java)
+                                .switchIfEmpty(
+                                    Mono.defer {
+                                        val location = resp.headers().asHttpHeaders().location
+                                        if (location != null) {
+                                            // extract user id from last path segment
+                                            val id = location.path.substringAfterLast("/")
+                                            getUserByIdReactive(id, token) // returns KeycloakUserResponse
+                                        } else {
+                                            Mono.error(KeycloakIntegrationException("No body and no Location header on create user"))
+                                        }
+                                    }
+                                )
+                        }
+                        resp.statusCode() == HttpStatus.CONFLICT -> Mono.error(
+                            WebClientResponseException.create(
+                                resp.statusCode().value(),
+                                "Conflict",
+                                resp.headers().asHttpHeaders(),
+                                ByteArray(0),
+                                null
+                            )
+                        )
+                        else -> resp.createException().flatMap { Mono.error(it) }
+                    }
+                }
                 .awaitSingle()
-            log.info { "Delete Keycloak user $keycloakUserId" }
-        } catch (e: Exception) {
-            log.error(e) { "CRITICAL: failed to delete keycloak user $keycloakUserId" }
-            throw KeycloakIntegrationException("Failed to delete keycloak user $keycloakUserId", e)
+        } catch (ex: WebClientResponseException) {
+            when (ex.statusCode) {
+                HttpStatus.CONFLICT -> throw AlreadyExistsException("user already exists")
+                HttpStatus.BAD_REQUEST -> throw KeycloakIntegrationException("invalid payload")
+                else -> throw KeycloakIntegrationException("keycloak error: ${ex.statusCode}", ex)
+            }
         }
     }
 
@@ -77,6 +96,22 @@ class KeycloakService(
         } catch (e: Exception) {
             log.error(e) { "Failed to get user $keycloakUserId" }
             throw KeycloakIntegrationException("Failed to get user $keycloakUserId", e)
+        }
+    }
+
+    suspend fun deleteUser(keycloakUserId: String) {
+        val token = getCachedAdminToken()
+        return try {
+            webClient.delete()
+                .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
+                .header("Authorization", "Bearer $token")
+                .retrieve()
+                .toBodilessEntity()
+                .awaitSingle()
+            log.info { "Delete Keycloak user $keycloakUserId" }
+        } catch (e: Exception) {
+            log.error(e) { "CRITICAL: failed to delete keycloak user $keycloakUserId" }
+            throw KeycloakIntegrationException("Failed to delete keycloak user $keycloakUserId", e)
         }
     }
 
@@ -151,6 +186,14 @@ class KeycloakService(
             emptyList()
         }
     }
+
+    private fun getUserByIdReactive(keycloakUserId: String, token: String): Mono<KeycloakUserResponse> =
+        webClient.get()
+            .uri("$keycloakUrl/admin/realms/$realm/users/$keycloakUserId")
+            .header("Authorization", "Bearer $token")
+            .retrieve()
+            .bodyToMono(KeycloakUserResponse::class.java)
+
 
     private suspend fun getRealmRole(roleName: String): KeycloakRole {
         val token = getCachedAdminToken()

@@ -7,7 +7,6 @@ import org.iot_platform.userservice.config.exception.ExtendError
 import org.iot_platform.userservice.domain.entity.User
 import org.iot_platform.userservice.domain.entity.UserRole
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
-import org.iot_platform.userservice.domain.repository.OrganizationRepository
 import org.iot_platform.userservice.domain.repository.UserRepository
 import org.iot_platform.userservice.domain.repository.UserRoleRepository
 import org.iot_platform.userservice.payload.keycloak.KeycloakCredential
@@ -36,7 +35,7 @@ class UserService(
     @Value("\${user.default-role}") private val defaultRole: String,
     @Lazy private val self: UserService // TODO переделать
 ) {
-    suspend fun registerUser(registration: UserRegistrationDto): UserResponseDto {
+    fun registerUser(registration: UserRegistrationDto): UserResponseDto {
         if (userRepository.countUserByUsernameOrEmail(registration.username, registration.email) > 0) {
             log.error { "Username or email already exists" }
             throw AlreadyExistsException("Username or email already exists")
@@ -59,7 +58,7 @@ class UserService(
         }
     }
 
-    private suspend fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse {
+    private fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse {
         val keycloakUser: KeycloakUserResponse
         try {
             keycloakUser = keycloakService.createUser(
@@ -85,7 +84,7 @@ class UserService(
 
     /* Только логика работы с БД*/
     @Transactional
-    suspend fun saveUserProfileAndAssignRole(
+    fun saveUserProfileAndAssignRole(
         keycloakUser: KeycloakUserResponse,
         registration: UserRegistrationDto
     ): User {
@@ -105,7 +104,7 @@ class UserService(
         return user
     }
 
-    suspend fun getUserEntity(userId: UUID): User {
+    fun getUserEntity(userId: UUID): User {
         return userRepository.findById(userId)
             .orThrow(
                 ExtendError.NOT_FOUND_ERROR,
@@ -113,7 +112,7 @@ class UserService(
             )
     }
 
-    suspend fun getUserById(userId: UUID): UserResponseDto? {
+    fun getUserById(userId: UUID): UserResponseDto? {
         val user = getUserEntity(userId)
 
         val roles = userRoleRepository.findByUserId(userId).map { it.roleName }
@@ -121,7 +120,7 @@ class UserService(
         return mapToResponseDto(user, roles)
     }
 
-    suspend fun getUserByKeycloakId(keycloakId: String): UserResponseDto? {
+    fun getUserByKeycloakId(keycloakId: String): UserResponseDto? {
         val user = userRepository.findByKeycloakUserId(keycloakId)
             .orThrow(
                 ExtendError.NOT_FOUND_ERROR,
@@ -133,7 +132,7 @@ class UserService(
         return mapToResponseDto(user, roles)
     }
 
-    suspend fun updateUserProfile(userId: UUID, update: UserProfileUpdateDto): UserResponseDto? {
+    fun updateUserProfile(userId: UUID, update: UserProfileUpdateDto): UserResponseDto? {
         val existingUser = userRepository.findById(userId) ?: return null
         val updatedUser = existingUser.copy(
             firstName = update.firstName ?: existingUser.firstName,
@@ -161,7 +160,7 @@ class UserService(
         return mapToResponseDto(saved, roles)
     }
 
-    suspend fun assignLocalRole(userId: UUID, roleName: String, grantedBy: UUID?): Boolean {
+    fun assignLocalRole(userId: UUID, roleName: String, grantedBy: UUID?): Boolean {
         val existing = userRoleRepository.findByUserIdAndRoleName(userId, roleName)
         if (existing != null) return false
         val userRole = UserRole(
@@ -173,7 +172,7 @@ class UserService(
         return true
     }
 
-    suspend fun removeRole(userId: UUID, roleName: String): Boolean {
+    fun removeRole(userId: UUID, roleName: String): Boolean {
         val userRole = userRoleRepository.findByUserIdAndRoleName(userId, roleName) ?: return false
 
         userRoleRepository.delete(userRole)
@@ -187,7 +186,7 @@ class UserService(
         return true
     }
 
-    suspend fun getUsersByOrganizationResponse(organizationId: UUID): List<UserResponseDto> {
+    fun getUsersByOrganizationResponse(organizationId: UUID): List<UserResponseDto> {
         val users = userRepository.findByOrganisationId(organizationId)
 
         return users.map { user ->
@@ -196,10 +195,10 @@ class UserService(
         }
     }
 
-    suspend fun getAllUsersByOrganization(organizationId: UUID): List<User> =
+    fun getAllUsersByOrganization(organizationId: UUID): List<User> =
         userRepository.findByOrganisationId(organizationId)
 
-    suspend fun updateLastLogin(keycloakUserId: String) {
+    fun updateLastLogin(keycloakUserId: String) {
         val user = userRepository.findByKeycloakUserId(keycloakUserId)
         if (user != null) {
             val updated = user.copy(lastLoginAt = LocalDateTime.now())
@@ -207,7 +206,7 @@ class UserService(
         }
     }
 
-    suspend fun deactivateUser(userId: UUID): Boolean {
+    fun deactivateUser(userId: UUID): Boolean {
         val user = userRepository.findById(userId) ?: return false
 
         val deactivated = user.copy(

@@ -41,7 +41,7 @@ class OrganizationController(
 
     @GetMapping
     @PreAuthorize("hasRole('admin')")
-    suspend fun getAllOrganizations(): ResponseEntity<Flow<OrganizationDto>> {
+    suspend fun getAllOrganizations(): ResponseEntity<List<OrganizationDto>> {
         val organizations = organizationService.getAllOrganizationDtos()
         return ResponseEntity.ok(organizations)
     }

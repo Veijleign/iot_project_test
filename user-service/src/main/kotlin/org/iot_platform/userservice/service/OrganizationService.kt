@@ -19,45 +19,50 @@ class OrganizationService(
     private val organizationRepository: OrganizationRepository,
     private val mapper: OrganizationMapper
 ) {
-    suspend fun createOrganization(dto: OrganizationDto): OrganizationDto {
-        val org = organizationRepository.save(Organization(
-            name = dto.name,
-            description = dto.description,
-            contactEmail = dto.contactEmail,
-            status = dto.status ?: OrganisationStatus.ACTIVE
-        ))
+    fun createOrganization(dto: OrganizationDto): OrganizationDto {
+        val org = organizationRepository.save(
+            Organization(
+                name = dto.name,
+                description = dto.description,
+                contactEmail = dto.contactEmail,
+                status = dto.status ?: OrganisationStatus.ACTIVE
+            )
+        )
 
         return mapper.toDto(org)
     }
 
-    suspend fun deactivateOrganization(orgId: UUID): Organization? {
+    fun deactivateOrganization(orgId: UUID): Organization? {
         val existing = getEntity(orgId)
-        val updated = existing.copy(
-            status = OrganisationStatus.INACTIVE,
-            updatedAt = LocalDateTime.now()
-        )
-        return organizationRepository.save(updated)
+
+        existing.status = OrganisationStatus.INACTIVE
+        existing.updatedAt = LocalDateTime.now()
+
+        return organizationRepository.save(existing)
     }
 
-    suspend fun getDtoById(orgId: UUID) : OrganizationDto =
+    fun getDtoById(orgId: UUID): OrganizationDto =
         mapper.toDto(getEntity(orgId))
 
-    suspend fun getEntity(orgId: UUID): Organization =
+    fun getEntity(orgId: UUID): Organization =
         organizationRepository.findById(orgId)
-            ?: throw NotFoundException("Organization not found with id $orgId") // todo test
+            .orElseThrow {
+                NotFoundException("Organization with id $orgId not found")
+            }
 
-    suspend fun getAllOrganizations() : Flow<Organization> =
+    fun getAllOrganizations(): List<Organization> =
         organizationRepository.findAll()
 
-    suspend fun getAllOrganizationDtos() : Flow<OrganizationDto> =
+    fun getAllOrganizationDtos(): List<OrganizationDto> =
         mapper.toDtoList(organizationRepository.findAll())
 
-    suspend fun getAllActive() : List<Organization> =
+    fun getAllActive(): List<Organization> =
         organizationRepository.findAllActive()
 
-    suspend fun getOrganizationUsers(orgId: UUID): List<User> = userService.getAllUsersByOrganization(orgId)
+    fun getOrganizationUsers(orgId: UUID): List<User> =
+        userService.getAllUsersByOrganization(orgId)
 
-    suspend fun isOrganizationActive(orgId: UUID): Boolean {
+    fun isOrganizationActive(orgId: UUID): Boolean {
         val existing = getEntity(orgId)
         return existing.status == OrganisationStatus.ACTIVE
     }
