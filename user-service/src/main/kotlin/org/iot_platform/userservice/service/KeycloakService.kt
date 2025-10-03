@@ -29,16 +29,14 @@ class KeycloakService(
     @Value("\${keycloak.admin-client-id}") private val adminClientId: String,
     @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String,
 ) {
-    private val adminTokenCache: AsyncLoadingCache<String, String> = Caffeine.newBuilder()
+    private val adminTokenCache = Caffeine.newBuilder()
         .expireAfterWrite(4, TimeUnit.MINUTES)
-        .buildAsync { _, _ ->
-            getAdminToken().toFuture()
-        }
+        .build<String, String> { _ -> fetchAdminTokenBlocking() }
 
-    suspend fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
+    fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getCachedAdminToken()
         try {
-            return webClient.post()
+            val response = webClient.post()
                 .uri("$keycloakUrl/admin/realms/$realm/users")
                 .header("Authorization", "Bearer $token")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -61,6 +59,7 @@ class KeycloakService(
                                     }
                                 )
                         }
+
                         resp.statusCode() == HttpStatus.CONFLICT -> Mono.error(
                             WebClientResponseException.create(
                                 resp.statusCode().value(),
@@ -70,10 +69,12 @@ class KeycloakService(
                                 null
                             )
                         )
+
                         else -> resp.createException().flatMap { Mono.error(it) }
                     }
                 }
-                .awaitSingle()
+                .block()
+            return response ?: throw KeycloakIntegrationException("Empty response from Keycloak on createUser")
         } catch (ex: WebClientResponseException) {
             when (ex.statusCode) {
                 HttpStatus.CONFLICT -> throw AlreadyExistsException("user already exists")
@@ -83,7 +84,7 @@ class KeycloakService(
         }
     }
 
-    suspend fun getUserById(keycloakUserId: String): KeycloakUserResponse {
+    fun getUserById(keycloakUserId: String): KeycloakUserResponse {
         val token = getCachedAdminToken()
 
         return try {
@@ -92,14 +93,14 @@ class KeycloakService(
                 .header("Authorization", "Bearer $token")
                 .retrieve()
                 .bodyToMono(KeycloakUserResponse::class.java)
-                .awaitSingle()
+                .block() ?: throw KeycloakIntegrationException("Empty Keycloak response for user $keycloakUserId")
         } catch (e: Exception) {
             log.error(e) { "Failed to get user $keycloakUserId" }
             throw KeycloakIntegrationException("Failed to get user $keycloakUserId", e)
         }
     }
 
-    suspend fun deleteUser(keycloakUserId: String) {
+    fun deleteUser(keycloakUserId: String) {
         val token = getCachedAdminToken()
         return try {
             webClient.delete()
@@ -107,7 +108,7 @@ class KeycloakService(
                 .header("Authorization", "Bearer $token")
                 .retrieve()
                 .toBodilessEntity()
-                .awaitSingle()
+                .block()
             log.info { "Delete Keycloak user $keycloakUserId" }
         } catch (e: Exception) {
             log.error(e) { "CRITICAL: failed to delete keycloak user $keycloakUserId" }
@@ -115,7 +116,7 @@ class KeycloakService(
         }
     }
 
-    suspend fun updateUser(keycloakUserId: String, userUpdate: KeycloakUserUpdateRequest) {
+    fun updateUser(keycloakUserId: String, userUpdate: KeycloakUserUpdateRequest) {
         val token = getCachedAdminToken()
 
         try {
@@ -126,14 +127,14 @@ class KeycloakService(
                 .bodyValue(userUpdate)
                 .retrieve()
                 .bodyToMono(Void::class.java)
-                .awaitSingle()
+                .block()
         } catch (e: Exception) {
             log.error(e) { "Failed to update user $keycloakUserId" }
             throw KeycloakIntegrationException("Failed to update user $keycloakUserId", e)
         }
     }
 
-    suspend fun assignRoleToUser(keycloakUserId: String, roleName: String) {
+    fun assignRoleToUser(keycloakUserId: String, roleName: String) {
         val token = getCachedAdminToken()
         val role = getRealmRole(roleName)
 
@@ -145,14 +146,14 @@ class KeycloakService(
                 .bodyValue(listOf(role))
                 .retrieve()
                 .bodyToMono(Void::class.java)
-                .awaitSingle()
+                .block()
         } catch (e: Exception) {
             log.error(e) { "Failed to assign role to user $keycloakUserId" }
             throw KeycloakIntegrationException("Failed to assign role to user $keycloakUserId", e)
         }
     }
 
-    suspend fun removeRoleFromUser(keycloakUserId: String, roleName: String) {
+    fun removeRoleFromUser(keycloakUserId: String, roleName: String) {
         val token = getCachedAdminToken()
         val role = getRealmRole(roleName)
 
@@ -164,14 +165,14 @@ class KeycloakService(
                 .bodyValue(listOf(role))
                 .retrieve()
                 .bodyToMono(Void::class.java)
-                .awaitSingle()
+                .block()
         } catch (e: Exception) {
             log.error(e) { "Failed to remove role to user $keycloakUserId" }
             throw KeycloakIntegrationException("Failed to remove role to user $keycloakUserId", e)
         }
     }
 
-    suspend fun getUserRoles(keycloakUserId: String): List<KeycloakRole> {
+    fun getUserRoles(keycloakUserId: String): List<KeycloakRole> {
         val token = getCachedAdminToken()
 
         return try {
@@ -181,7 +182,7 @@ class KeycloakService(
                 .retrieve()
                 .bodyToFlux(KeycloakRole::class.java)
                 .collectList()
-                .awaitSingle()
+                .block()
         } catch (e: Exception) {
             emptyList()
         }
@@ -195,7 +196,7 @@ class KeycloakService(
             .bodyToMono(KeycloakUserResponse::class.java)
 
 
-    private suspend fun getRealmRole(roleName: String): KeycloakRole {
+    private fun getRealmRole(roleName: String): KeycloakRole {
         val token = getCachedAdminToken()
 
         return try {
@@ -204,31 +205,37 @@ class KeycloakService(
                 .header("Authorization", "Bearer $token")
                 .retrieve()
                 .bodyToMono(KeycloakRole::class.java)
-                .awaitSingle()
+                .block() ?: throw KeycloakIntegrationException("No role $roleName")
         } catch (e: Exception) {
             log.error(e) { "Failed to get realm role to user" }
             throw KeycloakIntegrationException("Failed to get realm role to user", e)
         }
     }
 
-    private suspend fun getCachedAdminToken(): String {
-        return adminTokenCache.get("admin-token").await()
-    }
+    private fun getCachedAdminToken(): String =
+        adminTokenCache.get("admin-token")
 
-    private fun getAdminToken(): Mono<String> {
+
+    private fun fetchAdminTokenBlocking(): String {
         val tokenEndpoint = "$keycloakUrl/realms/$realm/protocol/openid-connect/token"
 
-        return webClient
-            .post()
-            .uri(tokenEndpoint)
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(
-                BodyInserters.fromFormData("grant_type", "client_credentials")
-                    .with("client_id", adminClientId)
-                    .with("client_secret", adminClientSecret)
-            )
-            .retrieve()
-            .bodyToMono(TokenResponse::class.java)
-            .map { it.accessToken }
+        return try {
+            webClient
+                .post()
+                .uri(tokenEndpoint)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(
+                    BodyInserters.fromFormData("grant_type", "client_credentials")
+                        .with("client_id", adminClientId)
+                        .with("client_secret", adminClientSecret)
+                )
+                .retrieve()
+                .bodyToMono(TokenResponse::class.java)
+                .map { it.accessToken }
+                .block() ?: throw KeycloakIntegrationException("Empty token response")
+        } catch (ex: Exception) {
+            log.error(ex) { "Failed to fetch admin token" }
+            throw KeycloakIntegrationException("Failed to fetch admin token", ex)
+        }
     }
 }
