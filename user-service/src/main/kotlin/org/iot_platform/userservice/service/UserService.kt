@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.iot_platform.userservice.config.exception.AlreadyExistsException
 import org.iot_platform.userservice.config.exception.ExtendError
+import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.User
 import org.iot_platform.userservice.domain.entity.UserRole
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
@@ -21,14 +22,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.time.LocalDateTime
 import java.util.*
 
 private val log = KotlinLogging.logger {}
 
 @Service
-class UserService(
+open class UserService(
     private val userRepository: UserRepository,
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService,
@@ -76,7 +76,7 @@ class UserService(
                     )
                 )
             )
-        } catch (e: WebClientResponseException.Conflict) {
+        } catch (ex: Exception) {
             throw AlreadyExistsException("Username or email already exists")
         }
         return keycloakUser
@@ -104,13 +104,12 @@ class UserService(
         return user
     }
 
-    fun getUserEntity(userId: UUID): User {
-        return userRepository.findById(userId)
-            .orThrow(
-                ExtendError.NOT_FOUND_ERROR,
-                "User with ID $userId does not exist"
-            )
-    }
+    fun getUserEntity(userId: UUID): User =
+        userRepository.findById(userId)
+            .orElseThrow {
+                NotFoundException("User with ID $userId does not exist")
+            }
+
 
     fun getUserById(userId: UUID): UserResponseDto? {
         val user = getUserEntity(userId)
@@ -133,17 +132,14 @@ class UserService(
     }
 
     fun updateUserProfile(userId: UUID, update: UserProfileUpdateDto): UserResponseDto? {
-        val existingUser = userRepository.findById(userId) ?: return null
-        val updatedUser = existingUser.copy(
-            firstName = update.firstName ?: existingUser.firstName,
-            lastName = update.lastName ?: existingUser.lastName,
-            preferences = update.preferences?.let {
-                ObjectMapper().writeValueAsString(it)
-            } ?: existingUser.preferences,
-            updatedAt = LocalDateTime.now(),
-        )
+        val existingUser = getUserEntity(userId)
 
-        val saved = userRepository.save(updatedUser)
+        existingUser.firstName = update.firstName
+        existingUser.lastName = update.lastName
+        existingUser.preferences = ObjectMapper().writeValueAsString(update.preferences)
+        existingUser.updatedAt = LocalDateTime.now()
+
+        val saved = userRepository.save(existingUser)
 
         //keycloak update
         keycloakService.updateUser(
@@ -178,9 +174,12 @@ class UserService(
         userRoleRepository.delete(userRole)
 
         // keycloak sync
-        val user = userRepository.findById(userId)
+        val user = getUserEntity(userId)
         if (user != null) {
-            keycloakService.removeRoleFromUser(user.keycloakUserId, roleName)
+            keycloakService.removeRoleFromUser(
+                user.keycloakUserId,
+                roleName
+            )
         }
 
         return true
@@ -201,20 +200,18 @@ class UserService(
     fun updateLastLogin(keycloakUserId: String) {
         val user = userRepository.findByKeycloakUserId(keycloakUserId)
         if (user != null) {
-            val updated = user.copy(lastLoginAt = LocalDateTime.now())
-            userRepository.save(updated)
+            user.lastLoginAt = LocalDateTime.now()
+            userRepository.save(user)
         }
     }
 
     fun deactivateUser(userId: UUID): Boolean {
-        val user = userRepository.findById(userId) ?: return false
+        val user = getUserEntity(userId)
 
-        val deactivated = user.copy(
-            status = UserStatus.INACTIVE,
-            updatedAt = LocalDateTime.now(),
-        )
+        user.status = UserStatus.INACTIVE
+        user.updatedAt = LocalDateTime.now()
 
-        userRepository.save(deactivated)
+        userRepository.save(user)
 
         keycloakService.updateUser(
             user.keycloakUserId,

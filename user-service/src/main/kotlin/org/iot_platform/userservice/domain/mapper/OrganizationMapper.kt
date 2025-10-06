@@ -1,7 +1,5 @@
 package org.iot_platform.userservice.domain.mapper
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.iot_platform.userservice.domain.entity.Organization
 import org.iot_platform.userservice.payload.user.OrganizationDto
 import org.springframework.stereotype.Component

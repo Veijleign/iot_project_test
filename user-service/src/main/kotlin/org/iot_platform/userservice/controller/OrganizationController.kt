@@ -1,7 +1,6 @@
 package org.iot_platform.userservice.controller
 
 import jakarta.validation.Valid
-import kotlinx.coroutines.flow.Flow
 import org.iot_platform.userservice.payload.user.OrganizationDto
 import org.iot_platform.userservice.service.OrganizationService
 import org.springframework.http.HttpStatus

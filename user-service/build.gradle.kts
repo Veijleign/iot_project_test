@@ -3,13 +3,13 @@ plugins {
     kotlin("plugin.spring") version "1.9.25"
     id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
-    kotlin("plugin.jpa") version "1.9.25"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
-    id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
+//    kotlin("plugin.jpa") version "1.9.25"
+//    id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
+//    id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
 }
 
-allOpen { annotation("jakarta.persistence.Entity") }        // or open all entities
-noArg { annotation("jakarta.persistence.Entity") }
+//allOpen { annotation("jakarta.persistence.Entity") }        // or open all entities
+//noArg { annotation("jakarta.persistence.Entity") }
 
 group = "org.iot_platform"
 version = "0.0.1-SNAPSHOT"
@@ -24,11 +24,14 @@ repositories {
     mavenCentral()
 }
 
+springBoot {
+    mainClass.set("org.iot_platform.userservice.UserServiceApplicationKt")
+}
+
 dependencies {
     // CORE
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Understand wtd is this
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -52,9 +55,6 @@ dependencies {
 
     //swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
-
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")

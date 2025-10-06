@@ -1,6 +1,5 @@
 package org.iot_platform.userservice.service
 
-import kotlinx.coroutines.flow.Flow
 import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.Organization
 import org.iot_platform.userservice.domain.entity.User
@@ -8,7 +7,6 @@ import org.iot_platform.userservice.domain.entity.eKey.OrganisationStatus
 import org.iot_platform.userservice.domain.mapper.OrganizationMapper
 import org.iot_platform.userservice.domain.repository.OrganizationRepository
 import org.iot_platform.userservice.payload.user.OrganizationDto
-import org.springframework.data.crossstore.ChangeSetPersister
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
