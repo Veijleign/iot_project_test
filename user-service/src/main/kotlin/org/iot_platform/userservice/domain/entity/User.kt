@@ -2,10 +2,11 @@ package org.iot_platform.userservice.domain.entity
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.annotations.UuidGenerator
+import org.hibernate.type.SqlTypes
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
-import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
 import java.util.*
 
@@ -14,7 +15,7 @@ import java.util.*
 class User(
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @UuidGenerator
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     var id: UUID? = null,
 
@@ -30,12 +31,19 @@ class User(
     @Column(name = "last_name")
     var lastName: String?,
 
-    @Column(name = "organization_id")
-    var organisationId: UUID?,
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    var organization: Organization? = null,
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "user_id")
+    var roles: MutableSet<UserRole> = mutableSetOf(),
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: UserStatus = UserStatus.ACTIVE,
+    var status: UserStatus,
+
+    @JdbcTypeCode(SqlTypes.JSON)
     var preferences: String? = null, // JSON with user settings
 
     @CreationTimestamp

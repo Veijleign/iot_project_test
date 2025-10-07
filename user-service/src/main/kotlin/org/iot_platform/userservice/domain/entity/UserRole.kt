@@ -1,7 +1,6 @@
 package org.iot_platform.userservice.domain.entity
 
 import jakarta.persistence.*
-import org.springframework.data.annotation.Id
 import java.time.LocalDateTime
 import java.util.*
 
@@ -12,10 +11,13 @@ class UserRole(
     @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null,
 
-    @Column(name = "user_id")
-    var userId: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    var user: User,
 
+    @Column(name = "role_name")
     var roleName: String, // admin, operator, viewer
+
     var scope: String? = null, // optional: specific scope like "building:123"
 
     @Column(name = "granted_at")

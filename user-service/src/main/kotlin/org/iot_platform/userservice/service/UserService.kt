@@ -95,7 +95,6 @@ open class UserService(
                 email = registration.email,
                 firstName = registration.firstName,
                 lastName = registration.lastName,
-                organisationId = registration.organisationId,
                 status = UserStatus.ACTIVE,
             )
         )
@@ -156,11 +155,16 @@ open class UserService(
         return mapToResponseDto(saved, roles)
     }
 
-    fun assignLocalRole(userId: UUID, roleName: String, grantedBy: UUID?): Boolean {
+    fun assignLocalRole(
+        userId: UUID,
+        roleName: String,
+        grantedBy: UUID?
+    ): Boolean {
+        val user = getUserEntity(userId)
         val existing = userRoleRepository.findByUserIdAndRoleName(userId, roleName)
         if (existing != null) return false
         val userRole = UserRole(
-            userId = userId,
+            user = user,
             roleName = roleName,
             grantedBy = grantedBy ?: userId
         )
@@ -186,7 +190,7 @@ open class UserService(
     }
 
     fun getUsersByOrganizationResponse(organizationId: UUID): List<UserResponseDto> {
-        val users = userRepository.findByOrganisationId(organizationId)
+        val users = userRepository.findByOrganizationId(organizationId)
 
         return users.map { user ->
             val roles = userRoleRepository.findByUserId(user.id!!).map { it.roleName }
@@ -195,7 +199,7 @@ open class UserService(
     }
 
     fun getAllUsersByOrganization(organizationId: UUID): List<User> =
-        userRepository.findByOrganisationId(organizationId)
+        userRepository.findByOrganizationId(organizationId)
 
     fun updateLastLogin(keycloakUserId: String) {
         val user = userRepository.findByKeycloakUserId(keycloakUserId)
@@ -235,7 +239,7 @@ open class UserService(
             email = user.email,
             firstName = user.firstName,
             lastName = user.lastName,
-            organizationId = user.organisationId,
+            organizationId = user.organization?.id,
             status = user.status,
             roles = roles,
             createdAt = user.createdAt,

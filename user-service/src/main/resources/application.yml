@@ -42,12 +42,12 @@ keycloak:
   main-realm: iot-platform
   admin-client-id: admin-client
   admin-client-secret: jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v
-
-webclient:
-  keycloak:
-    base-url: https://37.233.82.76.nip.io
-    connection-timeout: 5000
-    read-timeout: 10000
+#
+#webclient:
+#  keycloak:
+#    base-url: https://37.233.82.76.nip.io
+#    connection-timeout: 5000
+#    read-timeout: 10000
 
 management:
   endpoints:

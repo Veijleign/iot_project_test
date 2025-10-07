@@ -2,31 +2,29 @@ package org.iot_platform.userservice.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter
-import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
-@EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
+@EnableWebSecurity
+@EnableMethodSecurity
 class SecurityConfig {
 
     @Bean
-    fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
-            .authorizeExchange { exhange ->
-                exhange
-                    // Healthchecks
-                    .pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/v1/users/register").permitAll()
-
-                    // Anything else - requires authentication
-                    .anyExchange().authenticated()
+            .authorizeHttpRequests { requests ->
+                requests
+                    .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/v1/users/register").permitAll()
+                    .anyRequest().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { jwt ->
@@ -37,7 +35,7 @@ class SecurityConfig {
             .build()
     }
 
-    private fun jwtAuthConverter(): ReactiveJwtAuthenticationConverterAdapter {
+    private fun jwtAuthConverter(): JwtAuthenticationConverter {
         val jwtConverter = JwtAuthenticationConverter()
         jwtConverter.setJwtGrantedAuthoritiesConverter { jwt ->
             val authorities = mutableListOf<SimpleGrantedAuthority>()
@@ -76,7 +74,7 @@ class SecurityConfig {
             println("Extracted authorities: ${authorities.map { it.authority }}")
             authorities as Collection<GrantedAuthority>?
         }
-        return ReactiveJwtAuthenticationConverterAdapter(jwtConverter)
+        return jwtConverter
     }
 }
 

@@ -1,8 +1,7 @@
 package org.iot_platform.userservice.domain.entity
 
 import jakarta.persistence.*
-import org.iot_platform.userservice.domain.entity.eKey.OrganisationStatus
-import org.springframework.data.annotation.Id
+import org.iot_platform.userservice.domain.entity.eKey.OrganizationStatus
 import java.time.LocalDateTime
 import java.util.*
 
@@ -19,7 +18,13 @@ class Organization(
     @Column(name = "contact_email")
     var contactEmail: String?,
 
-    var status: OrganisationStatus = OrganisationStatus.ACTIVE,
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    var user: User? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var status: OrganizationStatus,
 
     @Column(name = "created_at")
     var createdAt: LocalDateTime = LocalDateTime.now(),

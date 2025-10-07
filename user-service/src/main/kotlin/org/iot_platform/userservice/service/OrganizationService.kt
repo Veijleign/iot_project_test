@@ -3,7 +3,7 @@ package org.iot_platform.userservice.service
 import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.Organization
 import org.iot_platform.userservice.domain.entity.User
-import org.iot_platform.userservice.domain.entity.eKey.OrganisationStatus
+import org.iot_platform.userservice.domain.entity.eKey.OrganizationStatus
 import org.iot_platform.userservice.domain.mapper.OrganizationMapper
 import org.iot_platform.userservice.domain.repository.OrganizationRepository
 import org.iot_platform.userservice.payload.user.OrganizationDto
@@ -23,7 +23,7 @@ class OrganizationService(
                 name = dto.name,
                 description = dto.description,
                 contactEmail = dto.contactEmail,
-                status = dto.status ?: OrganisationStatus.ACTIVE
+                status = dto.status ?: OrganizationStatus.ACTIVE
             )
         )
 
@@ -33,7 +33,7 @@ class OrganizationService(
     fun deactivateOrganization(orgId: UUID): Organization? {
         val existing = getEntity(orgId)
 
-        existing.status = OrganisationStatus.INACTIVE
+        existing.status = OrganizationStatus.INACTIVE
         existing.updatedAt = LocalDateTime.now()
 
         return organizationRepository.save(existing)
@@ -62,7 +62,7 @@ class OrganizationService(
 
     fun isOrganizationActive(orgId: UUID): Boolean {
         val existing = getEntity(orgId)
-        return existing.status == OrganisationStatus.ACTIVE
+        return existing.status == OrganizationStatus.ACTIVE
     }
 
 }

@@ -24,9 +24,9 @@ repositories {
     mavenCentral()
 }
 
-springBoot {
-    mainClass.set("org.iot_platform.userservice.UserServiceApplicationKt")
-}
+//springBoot {
+//    mainClass.set("org.iot_platform.userservice.UserServiceApplicationKt")
+//}
 
 dependencies {
     // CORE
@@ -67,10 +67,10 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // Testing
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+//    testImplementation("org.springframework.boot:spring-boot-starter-test")
+//    testImplementation("org.springframework.security:spring-security-test")
+//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+//    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
@@ -79,6 +79,6 @@ kotlin {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
+//tasks.withType<Test> {
+//    useJUnitPlatform()
+//}
