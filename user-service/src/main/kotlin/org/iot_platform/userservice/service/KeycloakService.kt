@@ -29,6 +29,7 @@ class KeycloakService(
 
     fun createUser(userRegistrationDto: KeycloakUserCreationRequest): KeycloakUserResponse {
         val token = getCachedAdminToken()
+        log.info("Creating user in Keycloak for username: ${userRegistrationDto.username}")
         val headers = HttpHeaders().apply {
             set("Authorization", "Bearer $token")
             contentType = MediaType.APPLICATION_JSON
@@ -37,20 +38,25 @@ class KeycloakService(
         val request = HttpEntity(userRegistrationDto, headers)
 
         return try {
+            log.info("Sending POST request to Keycloak for user creation.")
             val response = restTemplate.postForEntity(
                 "$keycloakUrl/admin/realms/$realm/users",
                 request,
                 KeycloakUserResponse::class.java
             )
-
+            log.info("Successfully created user in Keycloak: ${response.body?.id}")
             response.body ?: throw KeycloakIntegrationException("Empty response from Keycloak on createUser")
         } catch (ex: HttpClientErrorException) {
+            log.error("ERROR: ${ex.message}") // <-- Your requested logging line
+            log.error("Keycloak responded with status: ${ex.statusCode}") // Additional helpful info
+            log.error("Response body (if any): ${ex.responseBodyAsString}") // Even more detail
             when (ex.statusCode) {
                 HttpStatus.CONFLICT -> throw AlreadyExistsException("user already exists")
                 HttpStatus.BAD_REQUEST -> throw KeycloakIntegrationException("invalid payload")
                 else -> throw KeycloakIntegrationException("keycloak error: ${ex.statusCode}", ex)
             }
         } catch (ex: Exception) {
+            log.error("Unexpected error during Keycloak user creation: ${ex.message}", ex)
             throw KeycloakIntegrationException("Failed to create user", ex)
         }
     }

@@ -1,18 +1,21 @@
 package org.iot_platform.userservice.controller
 
 import jakarta.validation.Valid
+import mu.KotlinLogging
 import org.iot_platform.userservice.domain.repository.OrganizationRepository
 import org.iot_platform.userservice.payload.user.UserProfileUpdateDto
 import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
 import org.iot_platform.userservice.service.UserService
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
 import java.util.*
+
+private val log = KotlinLogging.logger {}
 
 
 @RestController
@@ -22,16 +25,17 @@ class UserController(
     private val organizationService: OrganizationRepository,
 ) {
     @PostMapping("/register")
-    suspend fun registerUser(
+    fun registerUser(
         @Valid @RequestBody registrationDto: UserRegistrationDto
     ): ResponseEntity<UserResponseDto> {
+        log.info("User registering request!")
 
         val user = userService.registerUser(registrationDto)
         return ResponseEntity.status(HttpStatus.CREATED).body(user)
     }
 
     @GetMapping("/me")
-    suspend fun getCurrentUser(
+    fun getCurrentUser(
         @AuthenticationPrincipal jwt: Jwt
     ): ResponseEntity<UserResponseDto> {
         val keycloakUserId = jwt.subject
@@ -49,7 +53,7 @@ class UserController(
     }
 
     @PutMapping("/me")
-    suspend fun updateCurrentUserProfile(
+    fun updateCurrentUserProfile(
         @AuthenticationPrincipal jwt: Jwt,
         @Valid @RequestBody updateDto: UserProfileUpdateDto
     ): ResponseEntity<UserResponseDto> {
@@ -68,7 +72,7 @@ class UserController(
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    suspend fun getUserById(@PathVariable userId: UUID): ResponseEntity<UserResponseDto> {
+    fun getUserById(@PathVariable userId: UUID): ResponseEntity<UserResponseDto> {
         val user = userService.getUserById(userId)
 
         return if (user != null) {
@@ -80,7 +84,7 @@ class UserController(
 
     @PostMapping("/{userId}/roles/{roleName}")
     @PreAuthorize("hasRole('admin')")
-    suspend fun assignRoleToUser(
+    fun assignRoleToUser(
         @PathVariable userId: UUID,
         @PathVariable roleName: String,
         @AuthenticationPrincipal jwt: Jwt
@@ -106,7 +110,7 @@ class UserController(
 
     @DeleteMapping("/{userId}/roles/{roleName}")
     @PreAuthorize("hasRole('admin')")
-    suspend fun removeRoleFromUser(
+    fun removeRoleFromUser(
         @PathVariable userId: UUID,
         @PathVariable roleName: String,
     ): ResponseEntity<Map<String, String>> {
@@ -129,7 +133,7 @@ class UserController(
 
     @PutMapping("/{userId}/deactivate")
     @PreAuthorize("hasRole('admin')")
-    suspend fun deactivateUser(
+    fun deactivateUser(
         @PathVariable userId: UUID,
     ): ResponseEntity<Map<String, String>> {
         val success = userService.deactivateUser(userId)
@@ -153,7 +157,7 @@ class UserController(
 
     @GetMapping("organization/{orgId}")
     @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    suspend fun getUsersByOrganization(
+    fun getUsersByOrganization(
         @PathVariable orgId: UUID
     ): ResponseEntity<List<UserResponseDto>> {
         val users = userService.getUsersByOrganizationResponse(orgId)

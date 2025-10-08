@@ -20,10 +20,10 @@ interface UserRoleRepository : JpaRepository<UserRole, UUID> {
 
     @Query(
         """
-        SELECT ur FROM user_roles ur
-        INNER JOIN users u On ur.user_id = u.id
-        WHERE u.organization_id = :organizationId
-        AND ur.role_name = :roleName
+        SELECT ur FROM UserRole ur
+        INNER JOIN User u On ur.id = u.id
+        WHERE u.organization.id = :organizationId
+        AND ur.roleName = :roleName
     """
     )
     fun findByOrganizationAndRole(organization: UUID, roleName: String): List<UserRole>

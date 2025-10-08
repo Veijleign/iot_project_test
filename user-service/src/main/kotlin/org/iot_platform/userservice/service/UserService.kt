@@ -6,7 +6,6 @@ import org.iot_platform.userservice.config.exception.AlreadyExistsException
 import org.iot_platform.userservice.config.exception.ExtendError
 import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.User
-import org.iot_platform.userservice.domain.entity.UserRole
 import org.iot_platform.userservice.domain.entity.eKey.UserStatus
 import org.iot_platform.userservice.domain.repository.UserRepository
 import org.iot_platform.userservice.domain.repository.UserRoleRepository
@@ -19,88 +18,70 @@ import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
 import org.iot_platform.userservice.utils.orThrow
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
 private val log = KotlinLogging.logger {}
 
 @Service
-open class UserService(
+class UserService(
     private val userRepository: UserRepository,
     private val userRoleRepository: UserRoleRepository,
     private val keycloakService: KeycloakService,
+    private val userDatabaseService: UserDatabaseService,
     @Value("\${user.default-role}") private val defaultRole: String,
-    @Lazy private val self: UserService // TODO переделать
 ) {
+
     fun registerUser(registration: UserRegistrationDto): UserResponseDto {
         if (userRepository.countUserByUsernameOrEmail(registration.username, registration.email) > 0) {
             log.error { "Username or email already exists" }
             throw AlreadyExistsException("Username or email already exists")
         }
 
-        val keycloakUser = registerUserInKeycloak(registration)
-
+        var keycloakUserId: String? = null
         try {
-            // Транзакция к нашей БД
-            val user = self.saveUserProfileAndAssignRole(keycloakUser, registration)
+            val keycloakUser = registerUserInKeycloak(registration)
+            keycloakUserId = keycloakUser.id
 
-            // Синхронизация с Keycloak
+            val user = userDatabaseService.saveUserProfileAndAssignRole(keycloakUser, registration)
+
             keycloakService.assignRoleToUser(user.keycloakUserId, defaultRole)
 
             return mapToResponseDto(user, listOf(defaultRole))
         } catch (e: Exception) {
             // Компенсация если что-то не так
-            keycloakService.deleteUser(keycloakUser.id)
-            throw RuntimeException("Failed to save user to the database")
+            if (keycloakUserId != null) {
+                try {
+                    keycloakService.deleteUser(keycloakUserId) // Use the captured ID
+                    log.info("Compensating: Deleted user $keycloakUserId from Keycloak due to local DB failure.")
+                } catch (deleteEx: Exception) {
+                    log.error("Compensating: Failed to delete user $keycloakUserId from Keycloak after local DB failure: ${deleteEx.message}", deleteEx)
+                }
+            }
+            log.error("Failed to register user due to: ${e.message}", e)
+            throw RuntimeException("Failed to save user to the database or Keycloak interaction failed", e)
         }
     }
 
     private fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse {
-        val keycloakUser: KeycloakUserResponse
-        try {
-            keycloakUser = keycloakService.createUser(
-                KeycloakUserCreationRequest(
-                    registration.username,
-                    registration.email,
-                    registration.firstName,
-                    registration.lastName,
-                    credentials = listOf(
-                        KeycloakCredential(
-                            type = "password",
-                            value = registration.password,
-                            temporary = false
-                        )
+        val keycloakUser = keycloakService.createUser(
+            KeycloakUserCreationRequest(
+                registration.username,
+                registration.email,
+                registration.firstName,
+                registration.lastName,
+                credentials = listOf(
+                    KeycloakCredential(
+                        type = "password",
+                        value = registration.password,
+                        temporary = false
                     )
                 )
             )
-        } catch (ex: Exception) {
-            throw AlreadyExistsException("Username or email already exists")
-        }
-        return keycloakUser
-    }
-
-    /* Только логика работы с БД*/
-    @Transactional
-    fun saveUserProfileAndAssignRole(
-        keycloakUser: KeycloakUserResponse,
-        registration: UserRegistrationDto
-    ): User {
-        val user = userRepository.save(
-            User(
-                keycloakUserId = keycloakUser.id,
-                username = registration.username,
-                email = registration.email,
-                firstName = registration.firstName,
-                lastName = registration.lastName,
-                status = UserStatus.ACTIVE,
-            )
         )
 
-        assignLocalRole(user.id!!, defaultRole, null)
-        return user
+        return keycloakUser
     }
 
     fun getUserEntity(userId: UUID): User =
@@ -109,7 +90,6 @@ open class UserService(
                 NotFoundException("User with ID $userId does not exist")
             }
 
-
     fun getUserById(userId: UUID): UserResponseDto? {
         val user = getUserEntity(userId)
 
@@ -117,6 +97,12 @@ open class UserService(
 
         return mapToResponseDto(user, roles)
     }
+
+    fun assignLocalRole(
+        userId: UUID,
+        roleName: String,
+        grantedBy: UUID?
+    ): Boolean = userDatabaseService.assignLocalRole(userId, roleName, grantedBy)
 
     fun getUserByKeycloakId(keycloakId: String): UserResponseDto? {
         val user = userRepository.findByKeycloakUserId(keycloakId)
@@ -153,23 +139,6 @@ open class UserService(
 
         val roles = userRoleRepository.findByUserId(userId).map { it.roleName }
         return mapToResponseDto(saved, roles)
-    }
-
-    fun assignLocalRole(
-        userId: UUID,
-        roleName: String,
-        grantedBy: UUID?
-    ): Boolean {
-        val user = getUserEntity(userId)
-        val existing = userRoleRepository.findByUserIdAndRoleName(userId, roleName)
-        if (existing != null) return false
-        val userRole = UserRole(
-            user = user,
-            roleName = roleName,
-            grantedBy = grantedBy ?: userId
-        )
-        userRoleRepository.save(userRole)
-        return true
     }
 
     fun removeRole(userId: UUID, roleName: String): Boolean {

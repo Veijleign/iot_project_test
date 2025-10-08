@@ -17,7 +17,7 @@ class OrganizationController(
 
     @PostMapping
     @PreAuthorize("hasRole('admin')")
-    suspend fun createOrganization(
+    fun createOrganization(
         @Valid @RequestBody orgDto: OrganizationDto
     ): ResponseEntity<OrganizationDto> {
         val organization = organizationService.createOrganization(orgDto)
@@ -26,7 +26,7 @@ class OrganizationController(
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    suspend fun getOrganizationById(
+    fun getOrganizationById(
         @PathVariable id: UUID
     ): ResponseEntity<OrganizationDto> {
         val organization = organizationService.getDtoById(id)
@@ -40,7 +40,7 @@ class OrganizationController(
 
     @GetMapping
     @PreAuthorize("hasRole('admin')")
-    suspend fun getAllOrganizations(): ResponseEntity<List<OrganizationDto>> {
+    fun getAllOrganizations(): ResponseEntity<List<OrganizationDto>> {
         val organizations = organizationService.getAllOrganizationDtos()
         return ResponseEntity.ok(organizations)
     }

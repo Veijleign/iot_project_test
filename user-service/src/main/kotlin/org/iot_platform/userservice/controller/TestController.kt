@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 class TestController {
 
     @GetMapping("/test")
-    suspend fun testEndpoint(): ResponseEntity<Map<String, String>> {
+    fun testEndpoint(): ResponseEntity<Map<String, String>> {
         return ResponseEntity.ok(
             mapOf(
                 "message" to "User service is working!",
@@ -25,15 +25,17 @@ class TestController {
 
     @GetMapping("/secure-test")
     @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    suspend fun secureTest(
+    fun secureTest(
         @AuthenticationPrincipal jwt: Jwt
-    ) : ResponseEntity<Map<String, Any?>> {
-        return ResponseEntity.ok(mapOf(
-            "message" to "Secure endpoint accessed successfully",
-            "user" to jwt.subject,
-            "roles" to extractRoles(jwt),
-            "scopes" to getScopesFromJwt(jwt)
-        ))
+    ): ResponseEntity<Map<String, Any?>> {
+        return ResponseEntity.ok(
+            mapOf(
+                "message" to "Secure endpoint accessed successfully",
+                "user" to jwt.subject,
+                "roles" to extractRoles(jwt),
+                "scopes" to getScopesFromJwt(jwt)
+            )
+        )
     }
 
     private fun extractRoles(jwt: Jwt): List<String> {

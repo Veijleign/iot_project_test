@@ -11,7 +11,9 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     fun findByName(name: String): Organization?
 
-    @Query("SELECT o  FROM Organization o WHERE o.status = 'ACTIVE'")
+    @Query("""
+        SELECT o  FROM Organization o WHERE o.status = 'ACTIVE'
+        """)
     fun findAllActive(): List<Organization>
 
 }

@@ -19,16 +19,16 @@ interface UserRepository : JpaRepository<User, UUID> {
 
     @Query(
         """
-        SELECT * FROM users u
-        INNER JOIN user_roles ur ON u.id = ur.user_id
-        WHERE ur.role_name = :roleName
+        SELECT u FROM User u
+        INNER JOIN UserRole ur ON u.id = ur.id
+        WHERE ur.roleName = :roleName
     """
     )
     fun findByRole(roleName: String): List<User>
 
     @Query(
         """
-        SELECT COUNT(*) FROM users u
+        SELECT COUNT(u) FROM User u
         WHERE u.organization.id = :organizationId
         AND u.status = 'ACTIVE'
     """
