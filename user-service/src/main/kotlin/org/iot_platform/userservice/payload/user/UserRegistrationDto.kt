@@ -5,8 +5,8 @@ import java.util.*
 data class UserRegistrationDto(
     val username: String,
     val email: String,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val password: String,
     val organisationId: UUID? = null
 )

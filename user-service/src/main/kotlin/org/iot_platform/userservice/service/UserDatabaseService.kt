@@ -1,5 +1,6 @@
 package org.iot_platform.userservice.service
 
+import mu.KotlinLogging
 import org.iot_platform.userservice.config.exception.NotFoundException
 import org.iot_platform.userservice.domain.entity.User
 import org.iot_platform.userservice.domain.entity.UserRole
@@ -11,7 +12,9 @@ import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
+
+private val log = KotlinLogging.logger {}
 
 @Service
 class UserDatabaseService(
@@ -26,6 +29,9 @@ class UserDatabaseService(
         keycloakUser: KeycloakUserResponse,
         registration: UserRegistrationDto
     ): User {
+        log.info {
+            "INFO: $registration"
+        }
         val user = userRepository.save(
             User(
                 keycloakUserId = keycloakUser.id,

@@ -29,7 +29,7 @@ spring:
 
   # Jackson Configuration
   jackson:
-    property-naming-strategy: SNAKE_CASE
+#    property-naming-strategy: SNAKE_CASE
     default-property-inclusion: NON_NULL
 
   # liquibase config

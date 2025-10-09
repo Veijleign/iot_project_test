@@ -56,7 +56,10 @@ class UserService(
                     keycloakService.deleteUser(keycloakUserId) // Use the captured ID
                     log.info("Compensating: Deleted user $keycloakUserId from Keycloak due to local DB failure.")
                 } catch (deleteEx: Exception) {
-                    log.error("Compensating: Failed to delete user $keycloakUserId from Keycloak after local DB failure: ${deleteEx.message}", deleteEx)
+                    log.error(
+                        "Compensating: Failed to delete user $keycloakUserId from Keycloak after local DB failure: ${deleteEx.message}",
+                        deleteEx
+                    )
                 }
             }
             log.error("Failed to register user due to: ${e.message}", e)
@@ -64,8 +67,8 @@ class UserService(
         }
     }
 
-    private fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse {
-        val keycloakUser = keycloakService.createUser(
+    private fun registerUserInKeycloak(registration: UserRegistrationDto): KeycloakUserResponse =
+        keycloakService.createUser(
             KeycloakUserCreationRequest(
                 registration.username,
                 registration.email,
@@ -80,9 +83,6 @@ class UserService(
                 )
             )
         )
-
-        return keycloakUser
-    }
 
     fun getUserEntity(userId: UUID): User =
         userRepository.findById(userId)

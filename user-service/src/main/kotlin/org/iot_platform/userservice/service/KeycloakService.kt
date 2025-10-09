@@ -39,17 +39,31 @@ class KeycloakService(
 
         return try {
             log.info("Sending POST request to Keycloak for user creation.")
-            val response = restTemplate.postForEntity(
+            val responseEntity = restTemplate.postForEntity(
                 "$keycloakUrl/admin/realms/$realm/users",
                 request,
                 KeycloakUserResponse::class.java
             )
-            log.info("Successfully created user in Keycloak: ${response.body?.id}")
-            response.body ?: throw KeycloakIntegrationException("Empty response from Keycloak on createUser")
+            log.info("Keycloak responded with status: ${responseEntity.statusCode}")
+
+            if (responseEntity.statusCode.is2xxSuccessful) {
+                val locationHeader = responseEntity.headers.location
+                if (locationHeader != null) {
+                    val userId = locationHeader.path.substringAfterLast("/")
+                    log.info("Successfully created user in Keycloak with ID: $userId")
+                    return KeycloakUserResponse(userId)
+                } else {
+                    log.error("Keycloak returned 2xx status but no Location header found. Response: $responseEntity")
+                    throw KeycloakIntegrationException("Keycloak returned 2xx status but no Location header found.")
+                }
+            } else {
+                log.error("Keycloak returned unexpected status: ${responseEntity.statusCode}")
+                throw KeycloakIntegrationException("Keycloak returned unexpected status: ${responseEntity.statusCode}")
+            }
         } catch (ex: HttpClientErrorException) {
-            log.error("ERROR: ${ex.message}") // <-- Your requested logging line
-            log.error("Keycloak responded with status: ${ex.statusCode}") // Additional helpful info
-            log.error("Response body (if any): ${ex.responseBodyAsString}") // Even more detail
+            log.error("ERROR: ${ex.message}")
+            log.error("Keycloak responded with status: ${ex.statusCode}")
+            log.error("Response body (if any): ${ex.responseBodyAsString}")
             when (ex.statusCode) {
                 HttpStatus.CONFLICT -> throw AlreadyExistsException("user already exists")
                 HttpStatus.BAD_REQUEST -> throw KeycloakIntegrationException("invalid payload")
