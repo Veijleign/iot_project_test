@@ -14,12 +14,42 @@ java {
     }
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
+//    maven {
+//        url 'https://packages.confluent.io/maven/'
+//    }
 }
 
 dependencies {
+    // core
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // Serialize/Deserialize Avro for Kafka
+    implementation("io.confluent:kafka-avro-serializer")
+
+    // AVRO lib
+//    implementation("org.apache.avro:avro:1.12.1")
+    implementation("org.apache.avro:avro")
+
+    // KAFKA
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // LOMBOK
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // DEB TOOL
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

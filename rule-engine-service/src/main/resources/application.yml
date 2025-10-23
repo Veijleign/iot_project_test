@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: rule-engine-service
+
+  kafka:
+    bootstrap-servers: 10.11.12.13:9092

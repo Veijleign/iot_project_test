@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: device-edge-service
+  kafka:
+    consumer:
+      group-id: sharedGroup
+    bootstrap-servers: 10.11.12.13:9092
+    producer:
+      bootstrap-servers: 10.11.12.13:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.ByteArraySerializer
+      properties:
+        # Reliability
+        acks: all # waiting confirmation from all replicas
+        retries: 5
+        enable.idempotence: true  # idempotence - excluding duplicates
+
+        # Performance
+        batch.size: 16384            # batch size
+        linger.ms: 10                # 10ms wait for batch accumulation
+        compression.type: snappy     # compression type
+        buffer.memory: 33554432      # 32MB buffer
+
+        # Timeouts
+        request.timeout.ms: 30000
+        delivery.timeout.ms: 60000
+
+
+
+#    topic:
+#      name: dev-topic
+
+
+logging:
+  file:
+    path: src/main/resources/log
+  level:
+    com: trace
+    org: trace
