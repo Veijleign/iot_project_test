@@ -1,0 +1,35 @@
+{
+  "namespace": "org.iot_platform.avro",
+  "type": "record",
+  "name": "WaterMeterEvent",
+  "fields": [
+    {
+      "name": "base",
+      "type": "BaseSensorEvent",
+      "doc": "Base sensor information"
+    },
+    {
+      "name": "flowRate",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Current flow rate in liters/minute"
+    },
+    {
+      "name": "totalConsumption",
+      "type": "double",
+      "doc": "Total water consumption in liters"
+    },
+    {
+      "name": "temperature",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Water temperature in Celsius"
+    },
+    {
+      "name": "leakDetected",
+      "type": ["null", "boolean"],
+      "default": null,
+      "doc": "True if abnormal flow pattern detected"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "namespace": "org.iot_platform.avro",
+  "type": "record",
+  "name": "BaseSensorEvent",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique event identifier"
+    },
+    {
+      "name": "deviceId",
+      "type": "string",
+      "doc": "Unique device identifier"
+    },
+    {
+      "name": "roomId",
+      "type": "string",
+      "doc": "Hotel room identifier"
+    },
+    {
+      "name": "hotelId",
+      "type": "string",
+      "doc": "Hotel identifier"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds"
+    },
+    {
+      "name": "sensorType",
+      "type": {
+        "type": "enum",
+        "name": "SensorType",
+        "symbols": [
+          "MOTION",
+          "TEMPERATURE_HUMIDITY",
+          "WATER_LEAK",
+          "ENERGY_METER",
+          "WATER_METER",
+          "AIR_QUALITY",
+          "LIGHT_LEVEL"
+        ]
+      },
+      "doc": "Type of sensor"
+    },
+    {
+      "name": "batteryLevel",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Battery level percentage (0-100)"
+    },
+    {
+      "name": "signalStrength",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Signal strength in dBm"
+    }
+  ]
+}

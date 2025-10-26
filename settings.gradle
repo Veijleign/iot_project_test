@@ -2,5 +2,12 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 rootProject.name = 'iot_project'
-include 'user-service'
-
+include(
+        'api-gateway',
+        'user-service',
+        'device-edge-service',
+        'alert-service',
+        'analytics-service',
+        'rule-engine-service',
+        'search-service'
+)

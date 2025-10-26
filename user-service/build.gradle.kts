@@ -1,15 +1,9 @@
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.5.4"
+    id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
-//    kotlin("plugin.jpa") version "1.9.25"
-//    id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
-//    id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
 }
-
-//allOpen { annotation("jakarta.persistence.Entity") }        // or open all entities
-//noArg { annotation("jakarta.persistence.Entity") }
 
 group = "org.iot_platform"
 version = "0.0.1-SNAPSHOT"

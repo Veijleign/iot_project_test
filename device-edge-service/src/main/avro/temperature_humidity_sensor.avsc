@@ -1,0 +1,40 @@
+{
+  "namespace": "org.iot_platform.avro",
+  "type": "record",
+  "name": "TemperatureHumidityEvent",
+  "fields": [
+    {
+      "name": "base",
+      "type": "BaseSensorEvent",
+      "doc": "Base sensor information"
+    },
+    {
+      "name": "temperature",
+      "type": "double",
+      "doc": "Temperature in Celsius"
+    },
+    {
+      "name": "humidity",
+      "type": "double",
+      "doc": "Humidity percentage (0-100)"
+    },
+    {
+      "name": "temperatureAlert",
+      "type": ["null", "boolean"],
+      "default": null,
+      "doc": "True if temperature is outside safe range (20-24°C)"
+    },
+    {
+      "name": "humidityAlert",
+      "type": ["null", "boolean"],
+      "default": null,
+      "doc": "True if humidity is outside safe range (40-60% RH)"
+    },
+    {
+      "name": "heatIndex",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Calculated heat index"
+    }
+  ]
+}

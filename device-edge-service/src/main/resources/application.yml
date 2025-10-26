@@ -4,9 +4,15 @@ spring:
   kafka:
     consumer:
       group-id: sharedGroup
-    bootstrap-servers: 10.11.12.13:9092
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.ByteArrayDeserializer
+        spring.json.trusted.packages: "org.iot_platform.model"
+
+    bootstrap-servers: 37.233.82.76:9092
     producer:
-      bootstrap-servers: 10.11.12.13:9092
+      bootstrap-servers: 37.233.82.76:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.ByteArraySerializer
       properties:
@@ -25,10 +31,13 @@ spring:
         request.timeout.ms: 30000
         delivery.timeout.ms: 60000
 
-
-
-#    topic:
-#      name: dev-topic
+    topics:
+      motion-sensor: "motion-events"
+      temperature-humidity: "climate-events"
+      water-leak: "leak-events"
+      energy-meter: "energy-events"
+      water-meter: "water-events"
+      air-quality: "air-quality-events"
 
 
 logging:

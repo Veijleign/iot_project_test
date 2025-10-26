@@ -1,15 +1,25 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.4'
+    id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.25' apply false
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25' apply false
 }
 
-group = 'org.example'
-version = '0.0.1-SNAPSHOT'
+subprojects {
+    group = 'org.iot_platform'
+    version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+    repositories {
+        mavenCentral()
+    }
+
+    // Настройка Java для всех модулей
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
     }
 }
 
@@ -25,4 +35,13 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Задачи для всего проекта
+tasks.register('cleanAll') {
+    dependsOn subprojects.collect { it.tasks.named('clean') }
+}
+
+tasks.register('buildAll') {
+    dependsOn subprojects.collect { it.tasks.named('build') }
 }
