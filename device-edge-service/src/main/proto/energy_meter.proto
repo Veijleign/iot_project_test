@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+import "sensor_common.proto";
+
+message EnergyMeterData {
+  SensorHeader header = 1;
+
+  // Потребление энергии
+  double total_energy_kwh = 2;       // Суммарное потребление (кВт·ч)
+  double current_power_w = 3;        // Текущая мощность (Вт)
+  double hourly_consumption_kwh = 4; // Потребление за последний час
+
+  // Анализ нагрузки
+  map<string, double> circuit_consumption = 5; // Потребление по цепям
+  PowerQuality power_quality = 6;
+  EnergyAlert alert = 7;
+}
+
+message PowerQuality {
+  float voltage = 1;
+  float frequency = 2;
+  float power_factor = 3;
+}
+
+message EnergyAlert {
+  AlertType type = 1;
+  string message = 2;
+  double threshold = 3;
+  double current_value = 4;
+}
+
+enum AlertType {
+  NO_ALERT = 0;
+  HIGH_CONSUMPTION = 1;    // Превышено потребление
+  PEAK_DEMAND = 2;         // Пиковая нагрузка
+  POWER_QUALITY_ISSUE = 3; // Проблемы с качеством
+  EQUIPMENT_FAILURE = 4;   // Оборудование не работает
+}

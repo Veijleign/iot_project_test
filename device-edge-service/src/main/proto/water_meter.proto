@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+import "sensor_common.proto";
+
+message WaterMeterData {
+  SensorHeader header = 1;
+
+  // Потребление воды
+  double total_consumption_l = 2;    // Суммарное потребление (литры)
+  double flow_rate_lpm = 3;          // Текущий расход (л/мин)
+  double hourly_consumption_l = 4;   // Потребление за час
+
+  // Анализ использования
+  repeated WaterUsageEvent usage_events = 5;
+  LeakDetection leak_detection = 6;
+  WaterQuality quality = 7;
+}
+
+message WaterUsageEvent {
+  int64 start_time = 1;
+  int64 end_time = 2;
+  double volume_l = 3;
+  UsageType type = 4;  // shower, tap, toilet, etc.
+}
+
+enum UsageType {
+  UNKNOWN_USAGE = 0;
+  SHOWER = 1;
+  FAUCET = 2;
+  TOILET = 3;
+  BATH = 4;
+}
+
+message LeakDetection {
+  bool possible_leak = 1;
+  double leak_rate_lph = 2; // Расход при утечке (л/час)
+  string suspected_location = 3;
+}
+
+message WaterQuality {
+  float temperature_c = 1;
+  float ph_level = 2;
+  float turbidity = 3; // Мутность
+}

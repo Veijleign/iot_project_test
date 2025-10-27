@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+import "sensor_common.proto";
+
+message WaterLeakData {
+  SensorHeader header = 1;
+
+  bool leak_detected = 2;        // Обнаружена протечка
+  LeakSeverity severity = 3;     // Серьезность протечки
+  string location = 4;           // "bathroom", "kitchen", "corridor"
+  int64 duration_seconds = 5;    // Длительность протечки (если применимо)
+
+  // Для предотвращения ложных срабатываний
+  float detection_confidence = 6;
+  repeated string affected_zones = 7; // Затронутые зоны
+}
+
+enum LeakSeverity {
+  NO_LEAK = 0;
+  MINOR = 1;      // Небольшая влажность
+  MODERATE = 2;   // Видимая вода
+  SEVERE = 3;     // Сильная протечка
+  CRITICAL = 4;   // Затопление
+}

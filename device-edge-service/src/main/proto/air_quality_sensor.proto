@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+import "sensor_common.proto";
+
+message AirQualityData {
+  SensorHeader header = 1;
+
+  // Основные показатели
+  int32 co2_ppm = 2;              // CO2 в ppm
+  float tvoc_ppb = 3;             // Летучие органические соединения
+  float pm2_5 = 4;                // Частицы PM2.5
+  float pm10 = 5;                 // Частицы PM10
+
+  // Дополнительные параметры
+  float oxygen_percent = 6;       // Кислород %
+  int32 air_quality_index = 7;    // Общий индекс качества воздуха
+
+  // Рекомендации
+  VentilationRecommendation ventilation = 8;
+  repeated AirQualityAlert alerts = 9;
+}
+
+enum AirQualityLevel {
+  EXCELLENT_AQ = 0;
+  GOOD_AQ = 1;
+  MODERATE_AQ = 2;
+  POOR_AQ = 3;
+  SEVERE_AQ = 4;
+  HAZARDOUS_AQ = 5;
+}
+
+message VentilationRecommendation {
+  bool ventilation_needed = 1;
+  int32 recommended_duration_min = 2;
+  AirQualityLevel current_level = 3;
+  AirQualityLevel target_level = 4;
+}
+
+message AirQualityAlert {
+  AlertSeverity severity = 1;
+  string parameter = 2;  // "co2", "tvoc", "pm2_5"
+  float current_value = 3;
+  float threshold = 4;
+  string recommendation = 5;
+}
+
+enum AlertSeverity {
+  INFO = 0;
+  WARNING = 1;
+  CRITICAL = 2;
+  EMERGENCY = 3;
+}

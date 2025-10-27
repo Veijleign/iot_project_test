@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+import "sensor_common.proto";
+
+message ClimateData {
+  SensorHeader header = 1;
+  float temperature_c = 2;
+  float humidity_percent = 3;
+
+  // additional
+  float heat_index = 4;
+  float dew_point = 5;
+  ComfortLevel comfort_level = 6;
+
+  // HVAC status
+  bool heating_required = 7;
+  bool cooling_required = 8;
+  bool humidification_required = 9;
+  bool dehumidification_required = 10;
+}
+
+enum ComfortLevel {
+  COMFORTABLE = 0;
+  SLIGHTLY_UNCOMFORTABLE = 1;
+  UNCOMFORTABLE = 2;
+  DANGEROUS = 3;
+}

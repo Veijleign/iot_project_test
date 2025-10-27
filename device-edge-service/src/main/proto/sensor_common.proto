@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package org.iot_platform.hotel;
+
+option java_package = "org.iot_platform.hotel.protobuf";
+option java_multiple_files = true;
+
+// Общий заголовок для всех сообщений от датчиков
+message SensorHeader {
+  string device_id = 1;          // UUID устройства
+  string device_type = 2;        // Тип устройства
+  int64 timestamp = 3;           // Unix timestamp в миллисекундах
+  string hotel_id = 4;           // ID отеля
+  string room_number = 5;        // Номер комнаты
+  float battery_level = 6;       // Уровень заряда батареи (0-100%)
+  SignalStrength signal_strength = 7; // Сила сигнала
+}
+
+enum SignalStrength {
+  UNKNOWN = 0;
+  POOR = 1;
+  FAIR = 2;
+  GOOD = 3;
+  EXCELLENT = 4;
+}
+
+// Статус устройства
+enum DeviceStatus {
+  ONLINE = 0;
+  OFFLINE = 1;
+  LOW_BATTERY = 2;
+  MAINTENANCE_REQUIRED = 3;
+}
