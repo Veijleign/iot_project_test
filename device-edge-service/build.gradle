@@ -29,18 +29,19 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                java { }
+                java {}
             }
         }
     }
 }
 
 sourceSets {
-    src {
-        main {
-            java {
-                srcDirs 'build/generated/source/proto/main/java'
-            }
+    main {
+        proto {
+            srcDir 'src/main/proto'
+        }
+        java {
+            srcDirs 'build/generated/source/proto/main/java'
         }
     }
 }

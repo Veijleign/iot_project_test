@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-package org.iot_platform.hotel;
+package org.iot_platform.protos.sensor_common;
+option java_package = "org.iot_platform.protos.sensor_common";
 
 option java_multiple_files = true;
 

@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package org.iot_platform.hotel;
-
+package org.iot_platform.protos.air_quality_sensor;
+option java_package = "org.iot_platform.protos.air_quality_sensor";
 option java_multiple_files = true;
 
 import "sensor_common.proto";
 
 message AirQualityData {
-  SensorHeader header = 1;
+  sensor_common.SensorHeader header = 1;
 
   // Основные показатели
   int32 co2_ppm = 2;              // CO2 в ppm

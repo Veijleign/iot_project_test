@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package org.iot_platform.hotel;
-
+package org.iot_platform.protos.energy_meter_data;
+option java_package = "org.iot_platform.protos.energy_meter_data";
 option java_multiple_files = true;
 
 import "sensor_common.proto";
 
 message EnergyMeterData {
-  SensorHeader header = 1;
+  sensor_common.SensorHeader header = 1;
 
   // Потребление энергии
   double total_energy_kwh = 2;       // Суммарное потребление (кВт·ч)

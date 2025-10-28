@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package org.iot_platform.hotel;
-
+package org.iot_platform.protos.motion_sensor_data;
+option java_package = "org.iot_platform.protos.motion_sensor_data";
 option java_multiple_files = true;
 
 import "sensor_common.proto";
 
 message MotionSensorData {
-  SensorHeader header = 1;
+  sensor_common.SensorHeader header = 1;
 
   bool motion_detected = 2;      // Обнаружено движение
   int32 detection_count = 3;     // Количество срабатываний за период
@@ -20,7 +20,15 @@ message MotionSensorData {
 
 message MotionEvent {
   int64 event_timestamp = 1;
-  bool motion_detected = 2;
+  MotionType motion_type = 2;
+  string zone = 3;  // "entrance", "bed", "bathroom"
+}
+
+enum MotionType {
+  MOVEMENT_DETECTED = 0;
+  MOVEMENT_ENDED = 1;
+  OCCUPANCY_START = 2;
+  OCCUPANCY_END = 3;
 }
 
 enum RoomStatus {

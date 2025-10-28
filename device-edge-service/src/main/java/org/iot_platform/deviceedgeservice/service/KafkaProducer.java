@@ -1,6 +1,6 @@
 package org.iot_platform.deviceedgeservice.service;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,16 +15,21 @@ public class KafkaProducer {
 
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
 
-    public void sendData(String topic, String key, MessageLite protobufMessage) {
-
+    public <T extends Message> void sendData(String topic, String key, T protobufMessage) {
         byte[] serializedData = protobufMessage.toByteArray();
 
-        ListenableFuture<SendResult<String, byte[]>> sendResult =
-                kafkaTemplate.send(topic, key, serializedData);
-
-
-
-        log.info("Sent message to topic [{}]: {}", topic, protobufMessage.getClass().getSimpleName());
+        kafkaTemplate.send(topic, key, serializedData)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to send message to topic: {}, error: {}", topic, ex.getMessage());
+                    } else {
+                        log.info("Sent to topic: {}, partition: {}, offset: {}",
+                                topic,
+                                result.getRecordMetadata().partition(),
+                                result.getRecordMetadata().offset()
+                        );
+                    }
+                });
     }
 
 }
