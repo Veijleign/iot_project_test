@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.google.protobuf' version '0.9.4'
 }
 
 group = 'org.iot_platform'
@@ -21,42 +20,16 @@ configurations {
     }
 }
 
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:4.28.2'
-    }
-
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {}
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        proto {
-            srcDir 'src/main/proto'
-        }
-        java {
-            srcDirs 'build/generated/source/proto/main/java'
-        }
-    }
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // common-proto project
+     implementation project(':common-proto')
+
     // core
     implementation 'org.springframework.boot:spring-boot-starter'
-
-    //protobuf
-    implementation 'com.google.protobuf:protobuf-java:4.28.2'
-    implementation 'com.google.protobuf:protobuf-java-util:4.28.2'
 
     // KAFKA
     implementation 'org.springframework.kafka:spring-kafka'
@@ -66,16 +39,19 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // DEV TOOL
-//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
     // TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+springBoot {
+    mainClass = 'org.iot_platform.deviceedgeservice.DeviceEdgeServiceApplication'
 }
 
-compileJava.dependsOn generateProto
+tasks.named('test') {
+//    useJUnitPlatform()
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

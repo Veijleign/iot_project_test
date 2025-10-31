@@ -1,16 +1,14 @@
-package org.iot_platform.deviceedgeservice.service;
+package org.iot_platform.deviceedgeservice.kafka;
 
 import com.google.protobuf.Message;
-import com.google.protobuf.MessageLite;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
 
-import java.util.concurrent.CompletableFuture;
-
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
+@Component
 public class KafkaProducer {
 
     private final KafkaTemplate<String, byte[]> kafkaTemplate;

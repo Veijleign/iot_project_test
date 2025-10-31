@@ -19,7 +19,13 @@ repositories {
 }
 
 dependencies {
+    // common-proto project
+    implementation project(':common-proto')
+
+    //core
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

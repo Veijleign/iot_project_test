@@ -10,8 +10,17 @@ subprojects {
     group = 'org.iot_platform'
     version = '0.0.1-SNAPSHOT'
 
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
     repositories {
         mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
 
     // Настройка Java для всех модулей
@@ -27,21 +36,28 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-//    implementation 'org.springframework.boot:spring-boot-starter'
-//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-//    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-// Задачи для всего проекта
+// tasks for all project
 tasks.register('cleanAll') {
     dependsOn subprojects.collect { it.tasks.named('clean') }
 }
 
 tasks.register('buildAll') {
     dependsOn subprojects.collect { it.tasks.named('build') }
+}
+
+// disable tasks for root project
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('test') {
+    enabled = false
 }

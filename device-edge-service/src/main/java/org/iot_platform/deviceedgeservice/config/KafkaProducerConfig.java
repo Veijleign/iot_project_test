@@ -66,8 +66,6 @@ public class KafkaProducerConfig {
                         producerRecord.topic(), exception.getMessage());
             }
         });
-
         return template;
     }
-
 }

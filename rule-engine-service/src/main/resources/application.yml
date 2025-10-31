@@ -3,4 +3,59 @@ spring:
     name: rule-engine-service
 
   kafka:
-    bootstrap-servers: 10.11.12.13:9092
+    bootstrap-servers: 37.233.82.76:9092
+
+    consumer:
+      # Consumer Group
+      group-id: rule-engine-consumer-group
+
+      # Serializers/Deserializers
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+
+      # Offset Management
+      auto-offset-reset: earliest  # earliest | latest | none
+      enable-auto-commit: false    # Manual commit для надежности!
+
+      # Fetch Settings (оптимизация производительности)
+      fetch-min-size: 1            # Минимум байт для fetch (1 byte для низкой latency)
+      fetch-max-wait: 500          # Максимум 500ms ожидания данных
+      max-poll-records: 100        # Количество записей за один poll
+
+      # Session Management
+      max-poll-interval-ms: 300000 # 5 минут на обработку batch
+      session-timeout-ms: 30000    # 30 секунд session timeout
+      heartbeat-interval-ms: 3000  # 3 секунды heartbeat
+
+      properties:
+        # Isolation Level (для transactional producers)
+        isolation.level: read_committed
+
+        # Partition Assignment Strategy
+        partition.assignment.strategy: org.apache.kafka.clients.consumer.RangeAssignor
+
+        # Connection Settings
+        connections.max.idle.ms: 540000
+        request.timeout.ms: 30000
+
+        # Retry Settings
+        retry.backoff.ms: 100
+        reconnect.backoff.ms: 50
+        reconnect.backoff.max.ms: 1000
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+
+logging:
+  file:
+    path: src/main/resources/log
+#  level:
+#    org.apache.kafka: DEBUG  # Временно для диагностики
+#    org.springframework.kafka: DEBUG
