@@ -1,4 +1,4 @@
-package org.iot_platform.ruleengineservice.handler;
+package org.iot_platform.ruleengineservice.handler.common;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

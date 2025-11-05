@@ -2,7 +2,7 @@ package org.iot_platform.ruleengineservice.consumer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.iot_platform.ruleengineservice.handler.SensorDataHandler;
+import org.iot_platform.ruleengineservice.handler.common.SensorDataHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -44,16 +44,17 @@ public class SensorDataConsumer {
 
             if (handler == null) {
                 log.warn("No handler found for topic: {}", topic);
-                acknowledgment.acknowledge(); // ?????
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
                 return;
             }
 
             handler.handle(data);
+
+            acknowledgment.acknowledge();
         } catch (Exception e) {
             log.error("Error processing message from topic: {}", topic, e);
-            // retry and send to DLQ
-            acknowledgment.acknowledge();
-
         }
     }
 }

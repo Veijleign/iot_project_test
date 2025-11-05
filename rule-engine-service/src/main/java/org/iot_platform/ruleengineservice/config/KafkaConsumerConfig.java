@@ -37,8 +37,9 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
 
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 1000);
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 10000);
         props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
@@ -52,13 +53,14 @@ public class KafkaConsumerConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, byte[]>> kafkaListenerContainerFactory(){
         ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-//        factory.setConcurrency(3);
+        factory.setConcurrency(3);
+
         factory.setCommonErrorHandler(new DefaultErrorHandler(
-                new FixedBackOff(1000L, 3L) // 3 попытки с интервалом 1 секунда
+                new FixedBackOff(1000L, 3L)
         ));
 
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
-        factory.setBatchListener(true);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setBatchListener(false);
 
         return factory;
     }
