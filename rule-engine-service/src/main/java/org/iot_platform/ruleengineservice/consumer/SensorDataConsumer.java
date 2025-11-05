@@ -44,16 +44,21 @@ public class SensorDataConsumer {
 
             if (handler == null) {
                 log.warn("No handler found for topic: {}", topic);
-                acknowledgment.acknowledge(); // ?????
+                // Даже если обработчик не найден, нужно подтвердить сообщение,
+                // иначе consumer будет застревать на этом сообщении.
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
                 return;
             }
 
             handler.handle(data);
+            // Если обработка прошла успешно, подтверждаем сообщение
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
         } catch (Exception e) {
             log.error("Error processing message from topic: {}", topic, e);
-            // retry and send to DLQ
-            acknowledgment.acknowledge();
-
         }
     }
 }

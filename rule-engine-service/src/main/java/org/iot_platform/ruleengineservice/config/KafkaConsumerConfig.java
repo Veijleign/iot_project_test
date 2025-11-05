@@ -52,13 +52,14 @@ public class KafkaConsumerConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, byte[]>> kafkaListenerContainerFactory(){
         ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-//        factory.setConcurrency(3);
+        factory.setConcurrency(3);
+
         factory.setCommonErrorHandler(new DefaultErrorHandler(
                 new FixedBackOff(1000L, 3L) // 3 попытки с интервалом 1 секунда
         ));
 
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
-        factory.setBatchListener(true);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setBatchListener(false);
 
         return factory;
     }

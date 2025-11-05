@@ -15,7 +15,8 @@ spring:
 
       # Offset Management
       auto-offset-reset: earliest  # earliest | latest | none
-      enable-auto-commit: false    # Manual commit для надежности!
+      enable-auto-commit: true    # Manual commit для надежности!
+      auto-commit-interval: 5000         # Коммит каждые 5 секунд
 
       # Fetch Settings (оптимизация производительности)
       fetch-min-size: 1            # Минимум байт для fetch (1 byte для низкой latency)
@@ -42,6 +43,12 @@ spring:
         retry.backoff.ms: 100
         reconnect.backoff.ms: 50
         reconnect.backoff.max.ms: 1000
+
+    listener:
+      ack-mode: manual              # ← Это ключевая настройка!
+      type: single                  # ← single, не batch!
+      concurrency: 3                # Число потоков consumer
+      poll-timeout: 3000
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
