@@ -1,6 +1,7 @@
 spring:
   application:
-    name: rule-engine-service
+    name: search-service
+
 
   kafka:
     bootstrap-servers: 37.233.82.76:9092
@@ -16,7 +17,7 @@ spring:
       # Offset Management
       auto-offset-reset: earliest  # earliest | latest | none
       enable-auto-commit: false    # Manual commit for reliability
-      auto-commit-interval: 5000   # commit every 5 секунд
+      auto-commit-interval: 5000   # commit every 5 ??????
 
       # Fetch Settings
       fetch-min-size: 1            # min byte for fetch
@@ -29,7 +30,7 @@ spring:
       heartbeat-interval-ms: 3000  # 3 secs heartbeat
 
       properties:
-        # Isolation Level (для transactional producers)
+        # Isolation Level (??? transactional producers)
         isolation.level: read_committed
 
         # Partition Assignment Strategy
@@ -50,19 +51,45 @@ spring:
       concurrency: 3
       poll-timeout: 3000
 
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-      acks: all
-      retries: 3
-      properties:
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 5
+  data:
+    redis:
+      host: 37.233.82.76
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
 
+# Elasticsearch Index Settings
+elasticsearch:
+  indexes:
+    sensors:
+      name: iot-sensors
+      number-of-shards: 3
+      number-of-replicas: 1
+    alerts:
+      name: iot-alerts
+      number-of-shards: 3
+      number-of-replicas: 1
+    audit-logs:
+      name: iot-audit-logs
+      number-of-shards: 2
+      number-of-replicas: 1
+
+cache:
+  enabled: true
+  ttl: 300  # seconds
+  max-size: 10000
+
+server:
+  port: 8084
 
 logging:
+  level:
+    org.iot_platform.searchservice: DEBUG
+    org.apache.lucene: INFO
+    org.springframework.kafka: INFO
   file:
-    path: src/main/resources/log
-#  level:
-#    org.apache.kafka: DEBUG  # Временно для диагностики
-#    org.springframework.kafka: DEBUG
+    name: logs/search-service.log
