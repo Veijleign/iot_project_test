@@ -2,6 +2,10 @@ spring:
   application:
     name: search-service
 
+  elasticsearch:
+    uris: http://37.233.82.76:9200  # Твой сервер
+    connection-timeout: 5s
+    socket-timeout: 30s
 
   kafka:
     bootstrap-servers: 37.233.82.76:9092
@@ -51,36 +55,23 @@ spring:
       concurrency: 3
       poll-timeout: 3000
 
-  data:
-    redis:
-      host: 37.233.82.76
-      port: 6379
-      timeout: 2000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 2
-
 # Elasticsearch Index Settings
 elasticsearch:
-  indexes:
-    sensors:
-      name: iot-sensors
-      number-of-shards: 3
-      number-of-replicas: 1
-    alerts:
-      name: iot-alerts
-      number-of-shards: 3
-      number-of-replicas: 1
-    audit-logs:
-      name: iot-audit-logs
-      number-of-shards: 2
-      number-of-replicas: 1
+  index:
+    # prefix for all indexes
+    prefix: iot
+    shards: 1
+    replicas: 0
+    retention-days: 90
+
+  # Batch indexing settings
+  batch:
+    size: 100
+    flush-interval: 5s
 
 cache:
   enabled: true
-  ttl: 300  # seconds
+  ttl: 300  # secs
   max-size: 10000
 
 server:

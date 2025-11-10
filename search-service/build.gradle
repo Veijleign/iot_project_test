@@ -28,10 +28,6 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
-    // Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.redisson:redisson-spring-boot-starter:3.51.0'
-
     // Elasticsearch
     implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.29'
     implementation 'org.elasticsearch:elasticsearch:7.17.29'
