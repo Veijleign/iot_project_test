@@ -1,11 +1,8 @@
-server:
-  port: 8081
-
 spring:
   application:
     name: user-service
 
-  # r2dbc connection
+  # DB connection
   datasource:
     url: jdbc:postgresql://localhost:5432/iot_platform
     username: postgres
@@ -29,7 +26,6 @@ spring:
 
   # Jackson Configuration
   jackson:
-#    property-naming-strategy: SNAKE_CASE
     default-property-inclusion: NON_NULL
 
   # liquibase config
@@ -42,12 +38,13 @@ keycloak:
   main-realm: iot-platform
   admin-client-id: admin-client
   admin-client-secret: jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v
-#
-#webclient:
-#  keycloak:
-#    base-url: https://37.233.82.76.nip.io
-#    connection-timeout: 5000
-#    read-timeout: 10000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
 
 management:
   endpoints:

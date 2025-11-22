@@ -1,7 +1,7 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
+    alias(libs.plugins.java)
+    alias(libs.plugins.springboot)
+    alias(libs.plugins.springdependency)
 }
 
 group = 'org.iot_platform'
@@ -18,42 +18,50 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom libs.spring.cloud.bom.get().toString()
+    }
+}
+
 dependencies {
-    // Core
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-
-    // Kafka
-    implementation 'org.springframework.kafka:spring-kafka'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-
-    // Elasticsearch
-    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.29'
-    implementation 'org.elasticsearch:elasticsearch:7.17.29'
-
-    // JSON processing
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-    // Protobuf (common-proto)
+    // common-proto
     implementation project(':common-proto')
 
+    // Core
+    implementation(libs.spring.web)
+    implementation(libs.spring.validation)
+    implementation(libs.spring.data.elasticsearch)
+
+    // eureka
+    implementation(libs.eureka.client)
+
+    // Kafka
+    implementation(libs.spring.kafka)
+    testImplementation(libs.spring.kafka.test)
+
+    // Elasticsearch
+    implementation(libs.elasticsearch.core)
+    implementation(libs.elasticsearch.client)
+
+    // JSON processing
+    implementation(libs.jackson.java)
+
     // Monitoring
-    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation(libs.micrometer.prometheus)
 
     // Utilities
-    implementation 'org.apache.commons:commons-lang3'
-    implementation 'org.apache.commons:commons-collections4:4.5.0'
-    implementation 'com.google.guava:guava:33.5.0-jre'
+    implementation(libs.apache.commons.lang3)
+    implementation(libs.micrometer.prometheus)
+    implementation(libs.micrometer.prometheus)
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 
     // test
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation(libs.spring.test)
+    testRuntimeOnly(libs.junit.launcher)
 }
 
 tasks.named('test') {

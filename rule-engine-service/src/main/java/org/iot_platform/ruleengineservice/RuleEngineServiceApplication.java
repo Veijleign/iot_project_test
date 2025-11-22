@@ -2,8 +2,10 @@ package org.iot_platform.ruleengineservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
+@EnableDiscoveryClient
 public class RuleEngineServiceApplication {
 
     public static void main(String[] args) {

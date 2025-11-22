@@ -59,10 +59,13 @@ spring:
         enable.idempotence: true
         max.in.flight.requests.per.connection: 5
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
 
 logging:
   file:
     path: src/main/resources/log
-#  level:
-#    org.apache.kafka: DEBUG  # Временно для диагностики
-#    org.springframework.kafka: DEBUG

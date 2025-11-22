@@ -6,11 +6,17 @@ plugins {
 
 group = 'org.iot_platform'
 version = '0.0.1-SNAPSHOT'
-description = 'rule-engine-service'
+description = 'eureka-server'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
@@ -25,27 +31,13 @@ dependencyManagement {
 }
 
 dependencies {
-    // common-proto project
-    implementation project(':common-proto')
-
     // core
     implementation(libs.spring.core)
 
     // eureka
-    implementation(libs.eureka.client)
+    implementation(libs.eureka.server)
 
-    // KAFKA
-    implementation(libs.spring.kafka)
-    testImplementation(libs.spring.kafka.test)
-
-    // LOMBOK
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
-    // Jackson
-    implementation(libs.jackson.java)
-
-    // test
+    // tests
     testImplementation(libs.spring.test)
     testRuntimeOnly(libs.junit.launcher)
 }

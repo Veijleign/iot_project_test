@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.5.6"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.springboot)
+    alias(libs.plugins.springdependency)
 }
 
 group = "org.iot_platform"
@@ -20,49 +20,47 @@ repositories {
     mavenCentral()
 }
 
-extra["springCloudVersion"] = "2025.0.0"
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springcloud.get()}")
+    }
+}
 
 dependencies {
     // Spring Boot Starters
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation(libs.spring.webflux)
+    implementation(libs.spring.actuator)
+    implementation(libs.spring.validation)
 
-    // Spring Cloud Gateway
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
+    // cloud
+    implementation(libs.spring.gateway)
+    implementation(libs.spring.gateway.server.webflux)
+    implementation(libs.eureka.client)
 
     // Security and OAuth2
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    implementation("org.springframework.security:spring-security-oauth2-jose")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation(libs.spring.security)
+    implementation(libs.spring.oauth2.client)
+    implementation(libs.spring.oauth2.jose)
+    implementation(libs.spring.oauth2.resource)
 
     // Kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation(libs.jackson.kotlin)
+    implementation(libs.reactor.kotlin)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.coroutines.reactor)
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation(libs.kotlin.logging)
 
-    // Configuration
-    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    // Redis
 
-    // Micrometer для метрик
-    implementation("io.micrometer:micrometer-registry-prometheus")
-//    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webmvc")
+    // Metrics
+    implementation(libs.micrometer.prometheus)
 
     // Testing
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
-    testImplementation("org.springframework.security:spring-security-test")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-    }
+    testImplementation(libs.spring.test)
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.security.test)
 }
 
 springBoot {
