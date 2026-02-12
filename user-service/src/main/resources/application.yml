@@ -1,3 +1,6 @@
+server:
+  port: 0
+
 spring:
   application:
     name: user-service
@@ -9,7 +12,9 @@ spring:
     password: admin # надо выносить в пропсы
     driver-class-name: org.postgresql.Driver
 
+  # JPA | Hibernate
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     properties:
@@ -23,29 +28,36 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
+          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs
 
-  # Jackson Configuration
-  jackson:
-    default-property-inclusion: NON_NULL
-
-  # liquibase config
+  # liquibase
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
 
+  # Jackson (json)
+  jackson:
+    default-property-inclusion: NON_NULL
+
+# Keycloak config
 keycloak:
   server-url: https://37.233.82.76.nip.io
   main-realm: iot-platform
   admin-client-id: admin-client
   admin-client-secret: jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v
 
+# Eureka Client Config
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.uuid} # random
 
+# Actuator
 management:
   endpoints:
     web:
@@ -59,27 +71,16 @@ management:
       export:
         enabled: true
 
-app:
-  security:
-    cors:
-      allowed-origins:
-        - http://localhost:8090
-        - https://37.233.82.76.nip.io
-      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-      allowed-headers: "*"
-      allow-credentials: true
-
+# App Custom Config
 user:
   default-role: viewer
   registration:
     enabled: true
-    require-email-verification: false
-
   organization:
     max-users: 1000
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.springframework.web.reactive: DEBUG
-    org.springframework.security.oauth2: TRACE
+    root: INFO
+    org.springframework.security: INFO
+    org.iot_platform: DEBUG

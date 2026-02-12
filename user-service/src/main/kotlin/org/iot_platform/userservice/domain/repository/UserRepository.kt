@@ -9,13 +9,9 @@ import java.util.*
 @Repository
 interface UserRepository : JpaRepository<User, UUID> {
 
-    fun findByKeycloakUserId(keycloakUserId: String): User?
-
     fun findByUsername(username: String): User?
 
     fun findByEmail(email: String): User?
-
-    fun findByOrganizationId(organizationId: UUID): List<User>
 
     @Query(
         """
@@ -26,15 +22,7 @@ interface UserRepository : JpaRepository<User, UUID> {
     )
     fun findByRole(roleName: String): List<User>
 
-    @Query(
-        """
-        SELECT COUNT(u) FROM User u
-        WHERE u.organization.id = :organizationId
-        AND u.status = 'ACTIVE'
-    """
-    )
-    fun countActiveUsersByOrganization(organizationId: UUID): Long
-
+    fun findUserByKeycloakUserId(keycloakId: String): User?
 
     fun countUserByUsernameOrEmail(
         username: String,

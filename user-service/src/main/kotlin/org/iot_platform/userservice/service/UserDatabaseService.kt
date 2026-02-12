@@ -26,7 +26,7 @@ class UserDatabaseService(
     /* Только логика работы с БД */
     @Transactional
     fun saveUserProfileAndAssignRole(
-        keycloakUser: KeycloakUserResponse,
+        keycloakUserId: String,
         registration: UserRegistrationDto
     ): User {
         log.info {
@@ -34,7 +34,7 @@ class UserDatabaseService(
         }
         val user = userRepository.save(
             User(
-                keycloakUserId = keycloakUser.id,
+                keycloakUserId = keycloakUserId,
                 username = registration.username,
                 email = registration.email,
                 firstName = registration.firstName,

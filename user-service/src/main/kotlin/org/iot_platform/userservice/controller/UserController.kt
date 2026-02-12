@@ -2,7 +2,6 @@ package org.iot_platform.userservice.controller
 
 import jakarta.validation.Valid
 import mu.KotlinLogging
-import org.iot_platform.userservice.domain.repository.OrganizationRepository
 import org.iot_platform.userservice.payload.user.UserProfileUpdateDto
 import org.iot_platform.userservice.payload.user.UserRegistrationDto
 import org.iot_platform.userservice.payload.user.UserResponseDto
@@ -21,8 +20,7 @@ private val log = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/v1/users")
 class UserController(
-    private val userService: UserService,
-    private val organizationService: OrganizationRepository,
+    private val userService: UserService
 ) {
     @PostMapping("/register")
     fun registerUser(
@@ -153,14 +151,5 @@ class UserController(
                     )
                 )
         }
-    }
-
-    @GetMapping("organization/{orgId}")
-    @PreAuthorize("hasRole('admin') or hasRole('operator')")
-    fun getUsersByOrganization(
-        @PathVariable orgId: UUID
-    ): ResponseEntity<List<UserResponseDto>> {
-        val users = userService.getUsersByOrganizationResponse(orgId)
-        return ResponseEntity.ok(users)
     }
 }

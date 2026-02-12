@@ -5,7 +5,7 @@ data class KeycloakUserCreationRequest(
     val email: String,
     val firstName: String?,
     val lastName: String?,
+    val password: String,
     val enabled: Boolean = true,
-    val emailVerified: Boolean = false,
-    val credentials: List<KeycloakCredential>
+    val emailVerified: Boolean = false
 )

@@ -10,7 +10,6 @@ data class UserResponseDto(
     val email: String,
     val firstName: String?,
     val lastName: String?,
-    val organizationId: UUID?,
     val status: UserStatus,
     val roles: List<String>,
     val createdAt: LocalDateTime,

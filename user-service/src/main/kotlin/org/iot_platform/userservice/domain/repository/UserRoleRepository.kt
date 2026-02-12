@@ -18,14 +18,4 @@ interface UserRoleRepository : JpaRepository<UserRole, UUID> {
 
     fun deleteByUserIdAndRoleName(userId: UUID, roleName: String)
 
-    @Query(
-        """
-        SELECT ur FROM UserRole ur
-        INNER JOIN User u On ur.id = u.id
-        WHERE u.organization.id = :organizationId
-        AND ur.roleName = :roleName
-    """
-    )
-    fun findByOrganizationAndRole(organization: UUID, roleName: String): List<UserRole>
-
 }

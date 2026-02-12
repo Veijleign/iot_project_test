@@ -1,4 +1,6 @@
 plugins {
+//    alias(libs.plugins.jpa.plugin)
+    kotlin("plugin.jpa") version "1.9.22"
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.springboot)
@@ -55,6 +57,9 @@ dependencies {
     //swagger
     implementation(libs.openapi.starter)
 
+    // Keycloak
+    implementation(libs.keycloak.admin)
+
     // Kotlin
     implementation(libs.kotlin.reflect)
     implementation(libs.jackson.kotlin)
@@ -67,7 +72,6 @@ dependencies {
 
     // Testing
     testImplementation(libs.spring.test)
-    testImplementation(libs.reactor.test)
     testImplementation(libs.security.test)
     testImplementation(libs.junit.launcher)
 }

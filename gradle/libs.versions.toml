@@ -11,6 +11,9 @@ elasticsearch = "7.17.29"
 guava = "33.5.0-jre"
 commons = "4.5.0"
 caffeine = "3.2.2"
+openapi = "2.8.15"
+keycloak = "26.0.7"
+jpa = "1.9.25"
 
 # Databases
 postgres = "42.7.3"
@@ -28,7 +31,6 @@ junit = "5.10.2"
 
 [libraries]
 # --- Spring Boot WebFlux / Security ---
-spring-webflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux" }
 spring-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
 spring-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
 spring-core = { group = "org.springframework.boot", name = "spring-boot-starter" }
@@ -37,8 +39,8 @@ spring-data-jpa = { group = "org.springframework.boot", name = "spring-boot-star
 spring-data-elasticsearch = { group = "org.springframework.boot", name = "spring-boot-starter-data-elasticsearch" }
 
 spring-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
-spring-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client" }
 spring-oauth2-resource = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server" }
+spring-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client" }
 spring-oauth2-jose = { group = "org.springframework.security", name = "spring-security-oauth2-jose" }
 
 # --- Kafka ---
@@ -96,15 +98,22 @@ postgresql-lib = { group = "org.postgresql", name = "postgresql" }
 caffeine-lib = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 
 # --- Springdoc ---
-openapi-starter = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui"}
+openapi-starter = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "openapi"}
 
-# --- Springdoc ---
+# --- Liquibase---
 liquibase-core = { group = "org.liquibase", name = "liquibase-core"}
+
+# --- Keycloak Admin ---
+keycloak-admin = { group = "org.keycloak", name = "keycloak-admin-client", version.ref = "keycloak"}
+
+# --- Redis ---
+redis-reactive = { group = "org.springframework.boot", name = "spring-boot-starter-data-redis-reactive"}
+
 
 [plugins]
 java = { id = "java" }
 springboot = { id = "org.springframework.boot", version.ref = "springboot" }
 springdependency = { id = "io.spring.dependency-management", version.ref = "springdependency" }
-
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+jpa-plugin = { id = "plugin.jpa", version.ref = "jpa" }

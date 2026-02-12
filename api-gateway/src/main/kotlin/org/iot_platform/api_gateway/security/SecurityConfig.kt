@@ -7,11 +7,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService
-import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -21,10 +16,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebFluxSecurity
-class SecurityConfig(
-    private val reactiveClientRegistrationRepository: ReactiveClientRegistrationRepository,
-    private val reactiveOAuth2AuthorizedClientService: ReactiveOAuth2AuthorizedClientService
-) {
+class SecurityConfig {
 
     @Bean
     fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
@@ -32,7 +24,9 @@ class SecurityConfig(
             .authorizeExchange { exchange ->
                 exchange
                     // публичные эндпоинты
-                    .pathMatchers("/actuator/**", "api/v1/public/**").permitAll()
+                    .pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers("/api/v1/auth/**").permitAll()
+                    .pathMatchers("/fallback").permitAll()
 
                     // Устройства - только для отправки телеметрии
                     .pathMatchers("/api/v1/telemetry/ingest")
@@ -41,18 +35,13 @@ class SecurityConfig(
                     // admin эндпоинты
                     .pathMatchers("/api/v1/devices/register").hasRole("ADMIN")
                     .pathMatchers("/api/v1/admin/**").permitAll()
+                    .pathMatchers("/api/v1/users/**").hasRole("ADMIN")
 
                     // Device management
-                    .pathMatchers("GET", "/api/v1/devices/**").hasAnyAuthority("ROLE_viewer", "SCOPE_device:read")
-                    .pathMatchers(
-                        "POST", "/api/v1/devices/**",
-                        "PUT", "/api/v1/devices/**",
-                        "DELETE", "/api/v1/devices/**"
-                    )
-                    .hasAnyAuthority("SCOPE_devices:write", "ROLE_operator", "ROLE_admin")
-
-                    // User management - admins only
-                    .pathMatchers("/api/v1/users/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("GET", "/api/v1/devices/**").hasAnyRole("VIEWER", "OPERATOR", "ADMIN")
+                    .pathMatchers("POST", "/api/v1/devices/**").hasAnyRole("OPERATOR", "ADMIN")
+                    .pathMatchers("PUT", "/api/v1/devices/**").hasAnyRole("OPERATOR", "ADMIN")
+                    .pathMatchers("DELETE", "/api/v1/devices/**").hasRole("ADMIN")
 
                     // For test // todo delete later
                     .pathMatchers("/api/v1/testing/test").permitAll()
@@ -63,7 +52,7 @@ class SecurityConfig(
             }
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { jwt ->
-                    jwt.jwtAuthenticationConverter(jwtAuthConverter())
+                    jwt.jwtAuthenticationConverter(keycloakJwtConverter())
                 }
             }
             .csrf { it.disable() }
@@ -72,10 +61,10 @@ class SecurityConfig(
             .build()
     }
 
-    private fun jwtAuthConverter(): ReactiveJwtAuthenticationConverterAdapter {
+    private fun keycloakJwtConverter(): ReactiveJwtAuthenticationConverterAdapter {
         val jwtConverter = JwtAuthenticationConverter()
         jwtConverter.setJwtGrantedAuthoritiesConverter { jwt ->
-            val authorities = mutableListOf<SimpleGrantedAuthority>()
+            val authorities = mutableListOf<GrantedAuthority>()
 
             // get scopes
             val scopes = jwt.getClaimAsStringList("scope") ?: emptyList()
@@ -89,7 +78,7 @@ class SecurityConfig(
                 val roles = realmAccess["roles"]
                 if (roles is List<*>) {
                     roles.filterIsInstance<String>().forEach { role ->
-                        authorities.add(SimpleGrantedAuthority("ROLE_$role"))
+                        authorities.add(SimpleGrantedAuthority("ROLE_${role.uppercase()}"))
                     }
                 }
             }
@@ -101,32 +90,18 @@ class SecurityConfig(
                     val roles = clientRoles["roles"]
                     if (roles is List<*>) {
                         roles.filterIsInstance<String>().forEach { role ->
-                            authorities.add(SimpleGrantedAuthority("ROLE_${clientId}_$role"))
+                            authorities.add(
+                                SimpleGrantedAuthority(
+                                    "ROLE_${clientId.uppercase()}_${role.uppercase()}"
+                                )
+                            )
                         }
                     }
                 }
             }
-
-            println("JWT Claims: ${jwt.claims}")
-            println("Extracted authorities: ${authorities.map { it.authority }}")
-            authorities as Collection<GrantedAuthority>?
+            authorities
         }
         return ReactiveJwtAuthenticationConverterAdapter(jwtConverter)
-    }
-
-    @Bean
-    fun authorizedClientManager(
-        clients: ReactiveClientRegistrationRepository,
-        auth2AuthorizedClientService: ReactiveOAuth2AuthorizedClientService
-    ): ReactiveOAuth2AuthorizedClientManager {
-        val provider = ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-            .authorizationCode()
-            .refreshToken()
-            .build()
-        return AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clients, auth2AuthorizedClientService)
-            .apply {
-                setAuthorizedClientProvider(provider)
-            }
     }
 
     @Bean
@@ -135,7 +110,6 @@ class SecurityConfig(
             allowedOrigins = listOf("*")
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE")
             allowedHeaders = listOf("*")
-            allowCredentials = false // при allowedOrigins = "*"
         }
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", corsConfiguration)

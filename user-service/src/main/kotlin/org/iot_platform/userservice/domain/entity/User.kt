@@ -31,10 +31,6 @@ class User(
     @Column(name = "last_name")
     var lastName: String?,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
-    var organization: Organization? = null,
-
     @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JoinColumn(name = "user_id")
     var roles: MutableSet<UserRole> = mutableSetOf(),

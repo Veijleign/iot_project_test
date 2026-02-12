@@ -18,7 +18,6 @@ object UserMapper {
             email = user.email,
             firstName = user.firstName,
             lastName = user.lastName,
-            organizationId = user.organization?.id,
             status = user.status,
             roles = roles,
             createdAt = user.createdAt,

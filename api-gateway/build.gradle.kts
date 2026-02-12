@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlin.spring)
@@ -27,35 +25,36 @@ dependencyManagement {
 }
 
 dependencies {
-    // Spring Boot Starters
-    implementation(libs.spring.webflux)
+    // core gateway
+    implementation(libs.spring.gateway)
+
+    // discovery
+    implementation(libs.eureka.client)
+
+    // Metrics
     implementation(libs.spring.actuator)
-    implementation(libs.spring.validation)
+    implementation(libs.micrometer.prometheus)
 
     // cloud
-    implementation(libs.spring.gateway)
     implementation(libs.spring.gateway.server.webflux)
-    implementation(libs.eureka.client)
 
     // Security and OAuth2
     implementation(libs.spring.security)
-    implementation(libs.spring.oauth2.client)
-    implementation(libs.spring.oauth2.jose)
     implementation(libs.spring.oauth2.resource)
 
-    // Kotlin
+//    implementation(libs.spring.oauth2.client)
+//    implementation(libs.spring.oauth2.jose)
+
+    // Kotlin support
     implementation(libs.jackson.kotlin)
-    implementation(libs.reactor.kotlin)
     implementation(libs.kotlin.reflect)
+    implementation(libs.reactor.kotlin)
     implementation(libs.coroutines.reactor)
 
     // Logging
     implementation(libs.kotlin.logging)
 
     // Redis
-
-    // Metrics
-    implementation(libs.micrometer.prometheus)
 
     // Testing
     testImplementation(libs.spring.test)
@@ -67,7 +66,7 @@ springBoot {
     mainClass.set("org.iot_platform.apigateway.ApiGatewayApplicationKt")
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
