@@ -55,8 +55,8 @@ class SecurityConfig {
                     jwt.jwtAuthenticationConverter(keycloakJwtConverter())
                 }
             }
-            .csrf { it.disable() }
-            .oauth2Client(Customizer.withDefaults())
+//            .csrf { it.disable() }
+//            .oauth2Client(Customizer.withDefaults())
             .cors { it.configurationSource(corsConfig()) }
             .build()
     }

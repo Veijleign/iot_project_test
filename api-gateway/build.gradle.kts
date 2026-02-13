@@ -42,8 +42,8 @@ dependencies {
     implementation(libs.spring.security)
     implementation(libs.spring.oauth2.resource)
 
-//    implementation(libs.spring.oauth2.client)
-//    implementation(libs.spring.oauth2.jose)
+    // Resilience4j
+    implementation(libs.spring.cloud.circuitbreaker)
 
     // Kotlin support
     implementation(libs.jackson.kotlin)
@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.kotlin.logging)
 
     // Redis
+    implementation(libs.redis.reactive)
 
     // Testing
     testImplementation(libs.spring.test)

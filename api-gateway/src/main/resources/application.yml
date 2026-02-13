@@ -5,114 +5,9 @@ spring:
   application:
     name: api-gateway
 
-  security:
-    oauth2:
-      # Resource Server: проверяем входящий JWT
-      resource-server:
-        jwt:
-          # Используем внутреннее имя контейнера Keycloak
-          issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
-
-      # OAuth2 Client: для TokenRelay downstream
-      client:
-        registration:
-          keycloak:
-            client-id: iot-gateway
-            client-secret: Qjfb99Ty7sKshoXP875VU4Enkn1bxvg1
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - openid
-              - profile
-              - email
-        provider:
-          keycloak:
-            issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
-
-
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            # Test endpoints
-            - id: testing-routes
-              uri: http://localhost:8081
-              predicates:
-                - Path=/api/v1/testing/**
-              filters:
-                - StripPrefix=1
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 10
-                    redis-rate-limiter.burstCapacity: 20
-
-            # User Service Routes
-            - id: user-service
-              uri: http://localhost:8081
-              predicates:
-                - Path=/api/v1/users/**
-              filters:
-                - StripPrefix=1
-                - TokenRelay
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 10
-                    redis-rate-limiter.burstCapacity: 20
-
-            # Device Service Routes
-            - id: device-service
-              uri: http://localhost:8082
-              predicates:
-                - Path=/api/v1/devices/**
-              filters:
-                - StripPrefix=1
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 50
-                    redis-rate-limiter.burstCapacity: 100
-
-            # Telemetry Service Routes
-            - id: telemetry-service
-              uri: http://localhost:8083
-              predicates:
-                - Path=/api/v1/telemetry/**
-              filters:
-                - StripPrefix=1
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 100
-                    redis-rate-limiter.burstCapacity: 200
-
-            # Analytics Service Routes
-            - id: analytics-service
-              uri: http://localhost:8084
-              predicates:
-                - Path=/api/v1/analytics/**
-              filters:
-                - StripPrefix=1
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 20
-                    redis-rate-limiter.burstCapacity: 40
-
-            # Alert Service Routes
-            - id: alert-service
-              uri: http://localhost:8085
-              predicates:
-                - Path=/api/v1/alerts/**
-              filters:
-                - StripPrefix=1
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 30
-                    redis-rate-limiter.burstCapacity: 60
-          default-filters:
-            - TokenRelay  # Relay в Authorization всех маршрутов
-
   data:
     redis:
-      host: localhost
+      host: http://37.233.82.76
       port: 6379
       timeout: 2000ms
       lettuce:
@@ -120,6 +15,73 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
+          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+          default-filters:
+            - name: CircuitBreaker
+              args:
+                name: defaultCircuitBreaker
+                fallbackUri: forward:/fallback/general
+
+          routes:
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/**, /api/v1/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceBreaker
+                    fallbackUri: forward:/fallback/user
+
+            - id: device-service
+              uri: lb://DEVICE-EDGE-SERVICE
+              predicates:
+                - Path=/api/v1/devices/**, /api/v1/telemetry/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 50
+                    redis-rate-limiter.burstCapacity: 100
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: deviceServiceBreaker
+                    fallbackUri: forward:/fallback/device
+
+            - id: analytics-service
+              uri: lb://ANALYTICS-SERVICE
+              predicates:
+                - Path=/api/v1/analytics/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
 
 # Management and Actuator
 management:
@@ -130,30 +92,8 @@ management:
   endpoint:
     health:
       show-details: always
+#  for future todo
   prometheus:
     metrics:
       export:
         enabled: true
-
-# Custom Application Properties
-iot-platform:
-  security:
-    # Public endpoints that don't require authentication
-    public-paths:
-      - /actuator/**
-      - /api/public/**
-    # Admin-only endpoints
-    admin-paths:
-      - /api/admin/**
-    # Rate limiting configuration
-    rate-limiting:
-      enabled: true
-      default-rate: 10
-      default-burst: 20
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true

@@ -14,6 +14,7 @@ caffeine = "3.2.2"
 openapi = "2.8.15"
 keycloak = "26.0.7"
 jpa = "1.9.25"
+resilience4j = "2.2.0"
 
 # Databases
 postgres = "42.7.3"
@@ -56,6 +57,7 @@ spring-gateway = { group = "org.springframework.cloud", name = "spring-cloud-sta
 spring-gateway-server-webflux = { group = "org.springframework.cloud", name = "spring-cloud-starter-gateway-server-webflux" }
 eureka-client = { group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-client" }
 eureka-server = { group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-server" }
+spring-cloud-circuitbreaker = { group = "org.springframework.cloud", name = "spring-cloud-starter-circuitbreaker-reactor-resilience4j" }
 
 # --- Elasticsearch ---
 elasticsearch-core = { group = "org.elasticsearch", name = "elasticsearch", version.ref = "elasticsearch" }
@@ -108,6 +110,9 @@ keycloak-admin = { group = "org.keycloak", name = "keycloak-admin-client", versi
 
 # --- Redis ---
 redis-reactive = { group = "org.springframework.boot", name = "spring-boot-starter-data-redis-reactive"}
+
+# --- Resilience4j ---
+#resilience4j-all= { group = "io.github.resilience4j", name = "resilience4j-all"}
 
 
 [plugins]
