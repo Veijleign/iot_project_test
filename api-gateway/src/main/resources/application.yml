@@ -7,7 +7,7 @@ spring:
 
   data:
     redis:
-      host: http://37.233.82.76
+      host: 37.233.82.76
       port: 6379
       timeout: 2000ms
       lettuce:
@@ -92,8 +92,15 @@ management:
   endpoint:
     health:
       show-details: always
+
 #  for future todo
   prometheus:
     metrics:
       export:
         enabled: true
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s

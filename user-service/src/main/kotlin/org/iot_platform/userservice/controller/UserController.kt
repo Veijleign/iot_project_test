@@ -18,7 +18,7 @@ private val log = KotlinLogging.logger {}
 
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService
 ) {

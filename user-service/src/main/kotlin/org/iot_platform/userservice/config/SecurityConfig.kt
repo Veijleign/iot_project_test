@@ -2,6 +2,7 @@ package org.iot_platform.userservice.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -22,8 +23,10 @@ class SecurityConfig {
         return http
             .authorizeHttpRequests { requests ->
                 requests
+                    .requestMatchers(HttpMethod.POST,"/api/v1/users/register").permitAll()
+
                     .requestMatchers("/actuator/**").permitAll()
-                    .requestMatchers("/v1/users/register").permitAll()
+
                     .anyRequest().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->

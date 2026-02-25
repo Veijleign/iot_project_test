@@ -2,7 +2,7 @@ package org.iot_platform.api_gateway.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.Customizer
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.GrantedAuthority
@@ -26,7 +26,8 @@ class SecurityConfig {
                     // публичные эндпоинты
                     .pathMatchers("/actuator/**").permitAll()
                     .pathMatchers("/api/v1/auth/**").permitAll()
-                    .pathMatchers("/fallback").permitAll()
+                    .pathMatchers("/fallback/**").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
 
                     // Устройства - только для отправки телеметрии
                     .pathMatchers("/api/v1/telemetry/ingest")
@@ -55,8 +56,7 @@ class SecurityConfig {
                     jwt.jwtAuthenticationConverter(keycloakJwtConverter())
                 }
             }
-//            .csrf { it.disable() }
-//            .oauth2Client(Customizer.withDefaults())
+            .csrf { it.disable() }
             .cors { it.configurationSource(corsConfig()) }
             .build()
     }
