@@ -29,6 +29,8 @@ class KeycloakService(
         val user = UserRepresentation().apply {
             username = dto.username
             email = dto.email
+            firstName = dto.firstName
+            lastName = dto.lastName
             isEnabled = true
             isEmailVerified = true
         }

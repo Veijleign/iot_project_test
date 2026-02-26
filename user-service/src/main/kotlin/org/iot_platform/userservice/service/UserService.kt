@@ -45,6 +45,10 @@ class UserService(
         var keycloakUserId: String? = null
         try {
             // create in keycloak
+            log.info {
+                "Users: firstName: ${registration.firstName}, lastName: ${registration.lastName}"
+            }
+
             val keycloakUserId = keycloakService.createUser(
                 KeycloakUserCreationRequest(
                     username = registration.username,

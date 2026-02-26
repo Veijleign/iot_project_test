@@ -69,7 +69,7 @@ class UserController(
     }
 
     @GetMapping("/{userId}")
-    @PreAuthorize("hasRole('admin') or hasRole('operator')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     fun getUserById(@PathVariable userId: UUID): ResponseEntity<UserResponseDto> {
         val user = userService.getUserById(userId)
 
@@ -81,7 +81,7 @@ class UserController(
     }
 
     @PostMapping("/{userId}/roles/{roleName}")
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('ADMIN')")
     fun assignRoleToUser(
         @PathVariable userId: UUID,
         @PathVariable roleName: String,
@@ -107,7 +107,7 @@ class UserController(
     }
 
     @DeleteMapping("/{userId}/roles/{roleName}")
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('ADMIN')")
     fun removeRoleFromUser(
         @PathVariable userId: UUID,
         @PathVariable roleName: String,
@@ -130,7 +130,7 @@ class UserController(
     }
 
     @PutMapping("/{userId}/deactivate")
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('ADMIN')")
     fun deactivateUser(
         @PathVariable userId: UUID,
     ): ResponseEntity<Map<String, String>> {

@@ -28,6 +28,7 @@ class SecurityConfig {
                     .pathMatchers("/api/v1/auth/**").permitAll()
                     .pathMatchers("/fallback/**").permitAll()
                     .pathMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
+                    .pathMatchers("/api/v1/users/me").authenticated()
 
                     // Устройства - только для отправки телеметрии
                     .pathMatchers("/api/v1/telemetry/ingest")
