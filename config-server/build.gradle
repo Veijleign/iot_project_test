@@ -1,0 +1,54 @@
+plugins {
+    alias(libs.plugins.java)
+    alias(libs.plugins.springboot)
+    alias(libs.plugins.springdependency)
+}
+
+group = 'org.iot_platform'
+version = '0.0.1-SNAPSHOT'
+description = 'config-server'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom libs.spring.cloud.bom.get().toString()
+    }
+}
+
+dependencies {
+    // core
+    implementation(libs.spring.core)
+    implementation(libs.spring.actuator)
+
+    // eureka
+    implementation(libs.eureka.client)
+
+    // cloud config server
+    implementation(libs.spring.cloud.config.server)
+
+    // Metrics
+    implementation(libs.micrometer.prometheus)
+
+    // TEST
+    testImplementation(libs.spring.test)
+    testRuntimeOnly(libs.junit.launcher)
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
