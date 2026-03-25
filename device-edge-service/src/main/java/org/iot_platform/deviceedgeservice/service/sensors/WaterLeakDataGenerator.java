@@ -2,6 +2,7 @@ package org.iot_platform.deviceedgeservice.service.sensors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.iot_platform.deviceedgeservice.service.sensors.common.SensorDataGenerator;
 import org.iot_platform.protos.water_leak_data.*;
 import org.iot_platform.protos.sensor_common.SensorHeader;
 import org.iot_platform.protos.sensor_common.SignalStrength;

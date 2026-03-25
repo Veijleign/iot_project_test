@@ -13,5 +13,6 @@ include(
         'common-proto',
         'rule-engine-service',
         'search-service',
-        'eureka-server'
+        'eureka-server',
+        'config-server'
 )

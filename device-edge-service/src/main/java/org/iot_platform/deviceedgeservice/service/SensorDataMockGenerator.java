@@ -17,7 +17,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @EnableScheduling
-//@ConditionalOnProperty(prefix = "iot.mock", name = "enabled", havingValue = "true")
 public class SensorDataMockGenerator {
 
     private final AirQualityDataGenerator airQualityGenerator;
@@ -28,8 +27,6 @@ public class SensorDataMockGenerator {
     private final WaterMeterDataGenerator waterMeterGenerator;
 
     private final KafkaProducer producerService;
-
-    private final List<String> roomNumbers = Arrays.asList("101", "102", "103", "201", "202", "301");
 
     @Async
     @Scheduled(fixedRate = 1500)

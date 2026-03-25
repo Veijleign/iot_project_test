@@ -63,8 +63,16 @@ dependencies {
     testImplementation(libs.security.test)
 }
 
-springBoot {
-    mainClass.set("org.iot_platform.apigateway.ApiGatewayApplicationKt")
+//springBoot {
+//    mainClass.set("org.iot_platform.apigateway.ApiGatewayApplicationKt")
+//}
+
+tasks.withType<Jar> {
+    enabled = false // disable this .jar
+}
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    enabled = true
+    archiveFileName.set("api-gateway.jar") // forces a static output name
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

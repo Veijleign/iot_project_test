@@ -58,6 +58,7 @@ spring-gateway-server-webflux = { group = "org.springframework.cloud", name = "s
 eureka-client = { group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-client" }
 eureka-server = { group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-server" }
 spring-cloud-circuitbreaker = { group = "org.springframework.cloud", name = "spring-cloud-starter-circuitbreaker-reactor-resilience4j" }
+spring-cloud-config-server = {group = "org.springframework.cloud", name = "spring-cloud-config-server"}
 
 # --- Elasticsearch ---
 elasticsearch-core = { group = "org.elasticsearch", name = "elasticsearch", version.ref = "elasticsearch" }

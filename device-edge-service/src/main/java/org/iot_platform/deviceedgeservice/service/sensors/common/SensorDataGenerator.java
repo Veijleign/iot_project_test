@@ -1,4 +1,4 @@
-package org.iot_platform.deviceedgeservice.service.sensors;
+package org.iot_platform.deviceedgeservice.service.sensors.common;
 
 public interface SensorDataGenerator<T> {
 
