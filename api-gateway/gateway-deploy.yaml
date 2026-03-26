@@ -18,6 +18,11 @@ spec:
           imagePullPolicy: Never # To user local images
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+            - secretRef:
+                name: api-gateway-secret
 
 ---
 apiVersion: v1

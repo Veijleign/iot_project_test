@@ -1,0 +1,109 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  # commented for k8s
+  #  data:
+  #    redis:
+  #      host: 37.233.82.76
+  #      port: 6379
+  #      timeout: 2000ms
+  #      lettuce:
+  #        pool:
+  #          max-active: 8
+  #          max-idle: 8
+  #          min-idle: 0
+  #
+  #  security:
+  #    oauth2:
+  #      resource-server:
+  #        jwt:
+  #          issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
+  #          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+          default-filters:
+            - name: CircuitBreaker
+              args:
+                name: defaultCircuitBreaker
+                fallbackUri: forward:/fallback/general
+
+          routes:
+            - id: user-service
+              uri: http://user-service:80
+              predicates:
+                - Path=/api/v1/users/**, /api/v1/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceBreaker
+                    fallbackUri: forward:/fallback/user
+
+            - id: device-service
+              uri: http://device-edge-service:80
+              predicates:
+                - Path=/api/v1/devices/**, /api/v1/telemetry/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 50
+                    redis-rate-limiter.burstCapacity: 100
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: deviceServiceBreaker
+                    fallbackUri: forward:/fallback/device
+
+            - id: analytics-service
+              uri: http://analytics-service:80
+              predicates:
+                - Path=/api/v1/analytics/**
+
+# commented for k8s
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#    fetch-registry: true
+#    register-with-eureka: true
+#  instance:
+#    prefer-ip-address: true
+
+# Management and Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+
+  #  for future todo
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
