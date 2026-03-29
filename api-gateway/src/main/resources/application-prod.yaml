@@ -5,25 +5,6 @@ spring:
   application:
     name: api-gateway
 
-  # commented for k8s
-  #  data:
-  #    redis:
-  #      host: 37.233.82.76
-  #      port: 6379
-  #      timeout: 2000ms
-  #      lettuce:
-  #        pool:
-  #          max-active: 8
-  #          max-idle: 8
-  #          min-idle: 0
-  #
-  #  security:
-  #    oauth2:
-  #      resource-server:
-  #        jwt:
-  #          issuer-uri: https://37.233.82.76.nip.io/realms/iot-platform
-  #          jwk-set-uri: https://37.233.82.76.nip.io/realms/iot-platform/protocol/openid-connect/certs
-
   cloud:
     gateway:
       server:
@@ -74,17 +55,6 @@ spring:
               uri: http://analytics-service:80
               predicates:
                 - Path=/api/v1/analytics/**
-
-# commented for k8s
-
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka/
-#    fetch-registry: true
-#    register-with-eureka: true
-#  instance:
-#    prefer-ip-address: true
 
 # Management and Actuator
 management:

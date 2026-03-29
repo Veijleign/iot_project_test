@@ -4,14 +4,15 @@ metadata:
   name: api-gateway-config
 data:
   # Redis config
-  SPRING_DATA_REDIS_HOST: "37.233.82.76"
+  SPRING_DATA_REDIS_HOST: "redis-test-master.databases.svc.cluster.local"
   SPRING_DATA_REDIS_PORT: "6379"
   SPRING_DATA_REDIS_TIMEOUT: "2000ms"
 
   # Security / Keycloak
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "https://37.233.82.76.nip.io/realms/iot-platform"
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "https://37.233.82.76.nip.io/realms/iot-plataform/protocol/openid-connect/certs"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak.109.69.17.82.nip.io/realms/iot-platform"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak.109.69.17.82.nip.io/realms/iot-platform/protocol/openid-connect/certs"
 
   # Other services routes
   USER_SERVICE_URL: "http://user-service:80"
   DEVICE_SERVICE_URL: "http://device-service:80"
+  ANALYTICS_SERVICE_URL: "http://analytics-service:80"
