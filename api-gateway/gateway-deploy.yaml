@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway-deployment
+  namespace: edge
 spec:
   replicas: 1 # for start test
   selector:
@@ -23,15 +24,34 @@ spec:
                 name: api-gateway-config
             - secretRef:
                 name: api-gateway-secret
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: api-gateway # inside cluster DNS name for CoreDNS
+  namespace: edge
 spec:
   selector:
     app: api-gateway # where to send requests
   ports:
     - port: 80
       targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+  namespace: edge
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: "api.109.69.17.82.nip.io"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 80
