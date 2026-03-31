@@ -23,8 +23,8 @@ metadata:
   name: user-service-secret
   namespace: apps
 type: Opaque
-stringData: # stringData automatically base64 encodes it for you!
-  DB_PASSWORD: "admin" # Update if you changed the Postgres password
+stringData:
+  DB_PASSWORD: "admin"
   KEYCLOAK_ADMIN_SECRET: "jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v"
 ---
 apiVersion: apps/v1
@@ -42,6 +42,27 @@ spec:
       labels:
         app: user-service
     spec:
+      # Image for creating database for our pod if it not exist
+      initContainers:
+        - name: init-db
+          image: postgres:15-alpine
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: DB_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              echo "Checking if iot_platform database exists..."
+              if psql -h postgres-test-postgresql.databases.svc.cluster.local -U postgres -lqt | cut -d \| -f 1 | grep -qw iot_platform; then
+                echo "Database already exists. Skipping."
+              else
+                echo "Creating database iot_platform..."
+                createdb -h postgres-test-postgresql.databases.svc.cluster.local -U postgres iot_platform
+              fi
       containers:
         - name: user-service-container
           image: user-service:v1
