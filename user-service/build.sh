@@ -10,7 +10,6 @@ IMAGE_FULL_NAME="${SERVICE_NAME}:${VERSION}"
 echo "Starting build for ${IMAGE_FULL_NAME}..."
 
 docker build \
-  --progress=plain \
   -t "${IMAGE_FULL_NAME}" \
   -f "${DOCKERFILE_PATH}" \
   .
