@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+  namespace: apps
+data:
+  # StatefulSet data
+  DB_URL: "jdbc:postgresql://postgres-test-postgresql.databases.svc.cluster.local:5432/iot_platform"
+  DB_USER: "postgres"
+  # Security / Keycloak
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak.109.69.17.82.nip.io/realms/iot-platform"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak.109.69.17.82.nip.io/realms/iot-platform/protocol/openid-connect/certs"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-service-secret
+  namespace: apps
+type: Opaque
+stringData: # stringData automatically base64 encodes it for you!
+  DB_PASSWORD: "admin" # Update if you changed the Postgres password
+  KEYCLOAK_ADMIN_SECRET: "jyJ8h7XDJt1zACtdZjz29IeC5IPg8x0v"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-deployment
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service-container
+          image: user-service:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: user-service-config
+            - secretRef:
+                name: user-service-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service # The API Gateway routes to this!
+  namespace: apps
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 80
+      targetPort: 8080

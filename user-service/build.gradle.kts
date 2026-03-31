@@ -34,7 +34,7 @@ dependencies {
     // eureka
     implementation(libs.eureka.client)
 
-    // Understand wtd is this
+    // Understand what is this
     implementation(libs.spring.actuator)
     implementation(libs.spring.validation)
 
