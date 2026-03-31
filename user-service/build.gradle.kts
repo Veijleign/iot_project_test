@@ -76,6 +76,14 @@ dependencies {
     testImplementation(libs.junit.launcher)
 }
 
+tasks.withType<Jar> {
+    enabled = false // disable this .jar
+}
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    enabled = true
+    archiveFileName.set("user-service.jar") // forces a static output name
+}
+
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
