@@ -28,4 +28,4 @@ COPY --from=builder /workspace/api-gateway/build/libs/*.jar api_gateway.jar
 EXPOSE 8080
 
 # for non-blocking instant startup of Tomcat
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/api_gateway.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "api_gateway.jar"]

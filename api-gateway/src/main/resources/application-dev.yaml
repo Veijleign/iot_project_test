@@ -74,8 +74,6 @@ spring:
               predicates:
                 - Path=/api/v1/analytics/**
 
-# commented for k8s
-
 eureka:
   client:
     service-url:
